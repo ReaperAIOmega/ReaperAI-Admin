@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Johnson Strategic Solutions | Admin Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="navbar" data-navbar="navbar-admin.html"></div>
+
+  <div class="container">
+    <div class="hero">
+      <div class="hero-box">
+        <h1>Administrative Dashboard</h1>
+        <p>
+          This is the Johnson Strategic Solutions control center. Track client activity, review intakes,
+          monitor services, and manage future platform operations.
+        </p>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><h3>New Intakes</h3><div class="stat-number">12</div></div>
+      <div class="stat-card"><h3>Active Clients</h3><div class="stat-number">8</div></div>
+      <div class="stat-card"><h3>Pending Payments</h3><div class="stat-number">3</div></div>
+      <div class="stat-card"><h3>Open Tasks</h3><div class="stat-number">17</div></div>
+    </div>
+
+    <div class="grid-3">
+      <div class="card"><h3>Lead Management</h3><p>Review new intake submissions and move qualified leads into active flow.</p><a href="intakes.html" class="button">Open</a></div>
+      <div class="card"><h3>Clients</h3><p>Review client records and service paths.</p><a href="clients.html" class="button">Open</a></div>
+      <div class="card"><h3>Payments</h3><p>Track invoice status and payment flow.</p><a href="payments.html" class="button">Open</a></div>
+      <div class="card"><h3>Documents</h3><p>Manage uploaded documents and service records.</p><a href="documents.html" class="button">Open</a></div>
+      <div class="card"><h3>Site Settings</h3><p>Control future pricing, service labels, and site settings.</p><a href="site-settings.html" class="button">Open</a></div>
+      <div class="card"><h3>Client Portal</h3><p>Review the client-facing portal structure.</p><a href="client-portal.html" class="button">Open</a></div>
+    </div>
+
+    <div class="table-wrap">
+      <h3>Recent Client Activity</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Client</th>
+            <th>Service</th>
+            <th>Status</th>
+            <th>Last Update</th>
+            <th>Next Step</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Jane Doe</td>
+            <td>Credit Repair</td>
+            <td><span class="status status-new">New Intake</span></td>
+            <td>Today</td>
+            <td>Review Intake</td>
+          </tr>
+          <tr>
+            <td>Michael Smith</td>
+            <td>Business Funding</td>
+            <td><span class="status status-active">Active</span></td>
+            <td>Yesterday</td>
+            <td>Send Blueprint</td>
+          </tr>
+          <tr>
+            <td>Tamika Johnson</td>
+            <td>Consultation</td>
+            <td><span class="status status-pending">Pending Payment</span></td>
+            <td>2 days ago</td>
+            <td>Send Invoice Reminder</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="footer">© Johnson Strategic Solutions | Admin Platform</div>
+
+  <script src="load-navbar.js"></script>
+</body>
+</html>
