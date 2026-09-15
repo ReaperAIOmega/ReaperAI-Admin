@@ -2,7 +2,8 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const SUPABASE_URL = 'https://itswbmjvuxumfjqkkqgx.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_lgBKt5K8CQCPSC-MaC7s6g_M2iTdWEN';
-const LOGIN_URL = 'https://reaperai.com/login.html?next=admin';
+const LOGIN_URL = 'https://admin.reaperai.com/login.html';
+const PASSWORD_URL = 'https://admin.reaperai.com/change-password.html';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
@@ -13,6 +14,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
 });
 
 const redirectToLogin = () => window.location.replace(LOGIN_URL);
+const onPasswordPage = window.location.pathname.endsWith('/change-password.html');
 
 try {
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -29,21 +31,34 @@ try {
       await supabase.auth.signOut();
       redirectToLogin();
     } else {
-      if (window.location.hash) {
-        window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
-      }
+      const { data: security, error: securityError } = await supabase
+        .from('account_security')
+        .select('password_initialized')
+        .eq('profile_id', session.user.id)
+        .single();
 
-      window.reaperAdmin = Object.freeze({ supabase, session, profile });
-      document.documentElement.style.visibility = 'visible';
-      document.dispatchEvent(new CustomEvent('reaper:admin-ready', { detail: window.reaperAdmin }));
-
-      document.addEventListener('click', async (event) => {
-        const target = event.target.closest?.('[data-signout]');
-        if (!target) return;
-        event.preventDefault();
+      if (securityError || !security) {
         await supabase.auth.signOut();
         redirectToLogin();
-      });
+      } else if (!security.password_initialized && !onPasswordPage) {
+        window.location.replace(PASSWORD_URL);
+      } else {
+        if (window.location.hash) {
+          window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+        }
+
+        window.reaperAdmin = Object.freeze({ supabase, session, profile, security });
+        document.documentElement.style.visibility = 'visible';
+        document.dispatchEvent(new CustomEvent('reaper:admin-ready', { detail: window.reaperAdmin }));
+
+        document.addEventListener('click', async (event) => {
+          const target = event.target.closest?.('[data-signout]');
+          if (!target) return;
+          event.preventDefault();
+          await supabase.auth.signOut();
+          redirectToLogin();
+        });
+      }
     }
   }
 } catch (error) {
