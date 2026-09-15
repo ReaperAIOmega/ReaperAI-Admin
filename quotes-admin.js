@@ -35,7 +35,8 @@ function populateCases() {
   for (const item of cases.filter((row) => row.client_id === clientId)) {
     const option = document.createElement('option');
     option.value = item.id;
-    option.textContent = item.title || item.case_type || item.id;
+    const policy = item.billing_policy === 'deferred_until_service_complete' ? ' · deferred billing' : '';
+    option.textContent = `${item.title || item.case_type || item.id}${policy}`;
     caseSelect.appendChild(option);
   }
 }
@@ -43,13 +44,31 @@ function populateCases() {
 async function loadReferenceData(supabase) {
   const [{ data: clientRows, error: clientError }, { data: caseRows, error: caseError }] = await Promise.all([
     supabase.from('clients').select('id,full_name,email,status').order('created_at', { ascending: false }),
-    supabase.from('cases').select('id,client_id,title,case_type,status').order('created_at', { ascending: false }),
+    supabase.from('cases').select('id,client_id,title,case_type,status,stage,billing_policy').order('created_at', { ascending: false }),
   ]);
   if (clientError || caseError) throw clientError || caseError;
   clients = clientRows || [];
   cases = caseRows || [];
   populateClients();
   populateCases();
+}
+
+async function releaseDeferredBilling(supabase, quote, button) {
+  button.disabled = true;
+  button.textContent = 'Releasing…';
+  const { data, error } = await supabase.functions.invoke('release-deferred-payment', {
+    body: { quote_id: quote.id },
+  });
+  if (error || !data?.ok) {
+    console.error('Deferred billing release failed', error, data);
+    button.disabled = false;
+    button.textContent = 'Release billing';
+    window.alert('Billing could not be released. Confirm the linked case is completed before retrying.');
+    return;
+  }
+  window.alert(data.already_released ? 'Billing was already released.' : 'Deferred billing released. A pending payment record was created.');
+  await loadReferenceData(supabase);
+  await loadQuotes(supabase);
 }
 
 async function loadQuotes(supabase) {
@@ -69,17 +88,21 @@ async function loadQuotes(supabase) {
   }
 
   const clientMap = new Map(clients.map((c) => [c.id, c]));
+  const caseMap = new Map(cases.map((c) => [c.id, c]));
   const table = document.createElement('table');
-  table.innerHTML = '<thead><tr><th>Client</th><th>Quote</th><th>Amount</th><th>Status</th><th>Sent</th><th>Expires</th><th>Action</th></tr></thead>';
+  table.innerHTML = '<thead><tr><th>Client</th><th>Quote</th><th>Amount</th><th>Status</th><th>Billing policy</th><th>Sent</th><th>Expires</th><th>Action</th></tr></thead>';
   const tbody = document.createElement('tbody');
   for (const quote of data) {
     const tr = document.createElement('tr');
     const client = clientMap.get(quote.client_id);
+    const caseRow = quote.case_id ? caseMap.get(quote.case_id) : null;
+    const billingPolicy = caseRow?.billing_policy === 'deferred_until_service_complete' ? 'Deferred until service complete' : 'Standard';
     const values = [
       client?.full_name || client?.email || quote.client_id,
       quote.title,
       fmtMoney(quote.amount, quote.currency || 'USD'),
       quote.status,
+      billingPolicy,
       fmtDate(quote.sent_at),
       fmtDate(quote.expires_at),
     ];
@@ -88,14 +111,18 @@ async function loadQuotes(supabase) {
       td.textContent = value;
       tr.appendChild(td);
     }
+
     const action = document.createElement('td');
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'btn-secondary';
+
     const canSupersede = ['draft','sent'].includes(quote.status);
-    button.textContent = canSupersede ? 'Supersede' : 'Locked';
-    button.disabled = !canSupersede;
+    const deferredAccepted = quote.status === 'accepted' && caseRow?.billing_policy === 'deferred_until_service_complete';
+    const serviceComplete = deferredAccepted && ['completed','closed'].includes(String(caseRow?.status || '').toLowerCase());
+
     if (canSupersede) {
+      button.textContent = 'Supersede';
       button.addEventListener('click', async () => {
         if (!window.confirm('Supersede this quote? The client will no longer be able to accept it.')) return;
         button.disabled = true;
@@ -107,7 +134,15 @@ async function loadQuotes(supabase) {
         }
         await loadQuotes(supabase);
       });
+    } else if (deferredAccepted) {
+      button.textContent = serviceComplete ? 'Release billing' : 'Billing deferred';
+      button.disabled = !serviceComplete;
+      if (serviceComplete) button.addEventListener('click', () => releaseDeferredBilling(supabase, quote, button));
+    } else {
+      button.textContent = 'Locked';
+      button.disabled = true;
     }
+
     action.appendChild(button);
     tr.appendChild(action);
     tbody.appendChild(tr);
@@ -154,13 +189,16 @@ form?.addEventListener('submit', async (event) => {
   submitButton.textContent = 'Create & send quote';
   if (error) {
     console.error('Quote creation error', error);
-    status.textContent = 'Quote could not be created.';
+    status.textContent = String(error.code) === '23505'
+      ? 'A sent quote already exists for this case. Supersede it before issuing a replacement.'
+      : 'Quote could not be created.';
     return;
   }
 
   status.textContent = 'Quote issued to the client portal.';
   form.reset();
   populateCases();
+  await loadReferenceData(supabase);
   await loadQuotes(supabase);
 });
 
