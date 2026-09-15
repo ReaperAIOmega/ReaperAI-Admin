@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" style="visibility:hidden;">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Johnson Strategic Solutions | Secure Admin Setup</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+  <div class="form-card" style="max-width:520px;margin-top:80px;">
+    <h2 class="center">Secure Administrator Account</h2>
+    <p>Administrator access requires a time-based authenticator code. Scan the QR code with an authenticator app, then enter the current six-digit code.</p>
+    <div id="mfa-setup">Preparing authenticator setup…</div>
+    <form id="mfa-enroll-form" hidden>
+      <label for="mfa-code">Authenticator code</label>
+      <input id="mfa-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+      <button id="mfa-enroll-submit" type="submit" class="button" style="width:100%;">Verify & secure account</button>
+      <p id="mfa-enroll-status" class="status-message" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+  <div class="footer">© Johnson Strategic Solutions | Admin Security</div>
+  <script type="module" src="auth-guard.js"></script><script type="module" src="mfa-enroll.js"></script>
+</body></html>
