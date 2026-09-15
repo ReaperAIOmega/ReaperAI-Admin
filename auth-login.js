@@ -16,6 +16,12 @@ const emailInput = document.getElementById('admin-email');
 const passwordInput = document.getElementById('admin-password');
 const submitButton = document.getElementById('admin-login-submit');
 const status = document.getElementById('admin-login-status');
+const params = new URLSearchParams(window.location.search);
+
+if (emailInput && params.get('email')) emailInput.value = params.get('email');
+if (params.get('initialized') === '1' && status) {
+  status.textContent = 'Permanent password set. Sign in with your new password.';
+}
 
 const existing = await supabase.auth.getSession();
 if (existing.data?.session) {
