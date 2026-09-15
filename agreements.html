@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" style="visibility:hidden;">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Johnson Strategic Solutions | Agreements</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+<div id="navbar" data-navbar="navbar-admin.html"></div>
+<div class="container">
+  <div class="hero"><div class="hero-box"><h1>Service Agreements</h1><p>Versioned electronic agreements. Templates remain unsendable until the exact version has a recorded legal approval.</p></div></div>
+  <div class="grid-2">
+    <div class="card"><h3>Create draft template</h3><form id="template-form"><label>Template name</label><input id="template-name" maxlength="160" required><label>Service type</label><input id="template-service" maxlength="120" required placeholder="Example: Business Funding"><label>Jurisdiction (optional state code)</label><input id="template-jurisdiction" maxlength="2" placeholder="GA"><label>Version</label><input id="template-version" type="number" min="1" value="1" required><label>Agreement title</label><input id="template-title" maxlength="200" required><label>Body</label><textarea id="template-body" maxlength="30000" rows="14" required></textarea><button class="button" type="submit">Save unapproved draft</button><p id="template-status" class="status-message"></p></form></div>
+    <div class="card"><h3>Create client agreement</h3><form id="agreement-form"><label>Client</label><select id="agreement-client" required></select><label>Case</label><select id="agreement-case" required></select><label>Template</label><select id="agreement-template" required></select><label>Initial status</label><select id="agreement-state"><option value="draft">Draft only</option><option value="sent">Send to client</option></select><button class="button" type="submit">Create agreement</button><p id="agreement-status" class="status-message"></p></form><p><strong>Send gate:</strong> “Send to client” will be rejected by the database unless the selected template/version is active and has a recorded legal approval. This interface cannot mark a template legally approved.</p></div>
+  </div>
+  <div class="table-wrap"><h3>Templates</h3><div id="templates-list">Loading…</div></div>
+  <div class="table-wrap"><h3>Client agreements</h3><div id="agreements-list">Loading…</div></div>
+</div>
+<div class="footer">© Johnson Strategic Solutions | Admin Platform</div>
+<script type="module" src="auth-guard.js"></script><script src="load-navbar.js"></script><script type="module" src="agreements-admin.js"></script>
+</body></html>
