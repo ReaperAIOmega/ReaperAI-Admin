@@ -1,40 +1,26 @@
 <!DOCTYPE html>
 <html lang="en" style="visibility:hidden;">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ReaperAI Admin</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Johnson Strategic Solutions | Admin Dashboard</title><link rel="stylesheet" href="styles.css"></head>
 <body>
-  <div id="navbar" data-navbar="navbar-admin.html"></div>
-
-  <div class="container">
-    <div class="panel hero-panel center">
-      <h1>Admin Dashboard</h1>
-      <p>Welcome, <span id="admin-name">Administrator</span>. Lead management, client tracking, intake review, and operational control are restricted to authenticated administrators.</p>
-
-      <div class="grid">
-        <div class="panel">
-          <h2 id="new-leads">0</h2>
-          <p>New intake submissions</p>
-        </div>
-
-        <div class="panel">
-          <h2 id="active-clients">0</h2>
-          <p>Active clients</p>
-        </div>
-
-        <div class="panel">
-          <h2 id="open-cases">0</h2>
-          <p>Open cases</p>
-        </div>
-      </div>
-    </div>
+<div id="navbar" data-navbar="navbar-admin.html"></div>
+<div class="container">
+  <div class="panel hero-panel center"><h1>Admin Command Center</h1><p>Welcome, <span id="admin-name">Administrator</span>. Operational metrics below are calculated from the protected production dataset.</p></div>
+  <div class="grid" style="margin-top:22px;">
+    <div class="panel"><h2 id="new-leads">0</h2><p>New intakes</p></div>
+    <div class="panel"><h2 id="new-contacts">0</h2><p>New contact inquiries</p></div>
+    <div class="panel"><h2 id="active-clients">0</h2><p>Active clients</p></div>
+    <div class="panel"><h2 id="open-cases">0</h2><p>Open cases</p></div>
+    <div class="panel"><h2 id="pending-documents">0</h2><p>Documents pending review</p></div>
+    <div class="panel"><h2 id="open-threads">0</h2><p>Open message threads</p></div>
+    <div class="panel"><h2 id="pending-agreements">0</h2><p>Agreements awaiting client action</p></div>
+    <div class="panel"><h2 id="sent-quotes">0</h2><p>Quotes awaiting response</p></div>
+    <div class="panel"><h2 id="pending-payments">0</h2><p>Pending payments</p></div>
+    <div class="panel"><h2 id="credit-issues">0</h2><p>Open credit issues</p></div>
+    <div class="panel"><h2 id="funding-applications">0</h2><p>Active funding applications</p></div>
+    <div class="panel"><h2 id="conversion-rate">0%</h2><p>Intake-to-client conversion</p></div>
   </div>
-
-  <script src="load-navbar.js"></script>
-  <script type="module" src="auth-guard.js"></script>
-  <script type="module" src="admin-data.js"></script>
-</body>
-</html>
+  <div class="panel" style="margin-top:22px;"><h2>Revenue status</h2><div class="grid"><div><strong id="paid-total">$0.00</strong><p>Recorded paid amount</p></div><div><strong id="outstanding-total">$0.00</strong><p>Pending amount</p></div><div><strong id="funded-total">$0.00</strong><p>Recorded client capital funded</p></div></div></div>
+</div>
+<div class="footer">© Johnson Strategic Solutions | Admin Platform</div>
+<script src="load-navbar.js"></script><script type="module" src="auth-guard.js"></script><script type="module" src="admin-data.js"></script>
+</body></html>
