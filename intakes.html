@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="en" style="visibility:hidden;">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Johnson Strategic Solutions | Intakes</title><link rel="stylesheet" href="styles.css"></head>
-<body>
+<body data-admin-view="intakes">
   <div id="navbar" data-navbar="navbar-admin.html"></div>
-  <div class="container"><div class="hero"><div class="hero-box"><h1>Intakes</h1><p>Authenticated intake-review workspace. Website submissions are stored in Supabase and restricted to administrator access after submission.</p></div></div></div>
+  <div class="container">
+    <div class="hero"><div class="hero-box"><h1>Intakes</h1><p>Live website submissions from Supabase. Intake data is restricted to authenticated administrators after submission.</p><p id="records-summary">Loading…</p></div></div>
+    <div class="table-wrap" id="records-table"><p>Loading intake records…</p></div>
+  </div>
   <div class="footer">© Johnson Strategic Solutions | Admin Platform</div>
-  <script type="module" src="auth-guard.js"></script><script src="load-navbar.js"></script>
+  <script type="module" src="auth-guard.js"></script><script src="load-navbar.js"></script><script type="module" src="admin-records.js"></script>
 </body></html>
