@@ -1,17 +1,23 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const navbarTarget = document.getElementById("navbar");
-  if (!navbarTarget) return;
+(async () => {
+  try {
+    await import('./auth-guard.js');
+  } catch (error) {
+    console.error('Admin authentication bootstrap failed:', error);
+    window.location.replace('https://reaperai.com/login.html?next=admin');
+    return;
+  }
 
-  const navbarFile = navbarTarget.dataset.navbar;
-  if (!navbarFile) return;
+  const placeholder = document.getElementById('navbar');
+  if (!placeholder) return;
 
-  fetch(navbarFile)
-    .then(response => response.text())
-    .then(data => {
-      navbarTarget.innerHTML = data;
-    })
-    .catch(error => {
-      navbarTarget.innerHTML = "<div style='padding:20px;color:white;'>Navbar failed to load.</div>";
-      console.error("Navbar load error:", error);
-    });
-});
+  const file = placeholder.dataset.navbar;
+  if (!file) return;
+
+  try {
+    const response = await fetch(file, { cache: 'no-store' });
+    if (!response.ok) throw new Error(`Navbar request failed: ${response.status}`);
+    placeholder.innerHTML = await response.text();
+  } catch (error) {
+    console.error('Navbar load failed:', error);
+  }
+})();
