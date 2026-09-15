@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" style="visibility:hidden;">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Johnson Strategic Solutions | Tasks</title><link rel="stylesheet" href="styles.css"></head>
+<body data-workflow-view="tasks">
+  <div id="navbar" data-navbar="navbar-admin.html"></div>
+  <div class="container">
+    <div class="hero"><div class="hero-box"><h1>Tasks</h1><p>Create and manage operational and client-assigned tasks tied to a client and, when applicable, a case.</p><p id="workflow-summary">Loading…</p></div></div>
+    <div class="form-card" style="margin-top:0;max-width:100%;">
+      <h3>Create task</h3>
+      <form id="task-create-form">
+        <label for="task-client">Client</label><select id="task-client" required><option value="">Select client</option></select>
+        <label for="task-case">Case</label><select id="task-case"><option value="">No case selected</option></select>
+        <label for="task-title">Task</label><input id="task-title" type="text" maxlength="200" required>
+        <label for="task-description">Description</label><textarea id="task-description" maxlength="4000"></textarea>
+        <label for="task-priority">Priority</label><select id="task-priority"><option value="normal">Normal</option><option value="high">High</option><option value="low">Low</option></select>
+        <label for="task-due">Due date</label><input id="task-due" type="datetime-local">
+        <label for="task-assignee">Assign to</label><select id="task-assignee"><option value="client">Client</option><option value="admin">Administrator</option></select>
+        <button id="task-create-submit" type="submit" class="button">Create task</button>
+        <p id="task-create-status" class="status-message" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+    <div class="table-wrap" id="workflow-table"><p>Loading tasks…</p></div>
+  </div>
+  <div class="footer">© Johnson Strategic Solutions | Admin Platform</div>
+  <script type="module" src="auth-guard.js"></script><script src="load-navbar.js"></script><script type="module" src="workflow-admin.js"></script>
+</body></html>
