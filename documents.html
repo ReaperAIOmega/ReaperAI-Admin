@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="en" style="visibility:hidden;">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Johnson Strategic Solutions | Documents</title><link rel="stylesheet" href="styles.css"></head>
-<body>
+<body data-admin-view="documents">
   <div id="navbar" data-navbar="navbar-admin.html"></div>
-  <div class="container"><div class="hero"><div class="hero-box"><h1>Documents</h1><p>Authenticated document-control workspace. Client files are stored in the private <code>client-documents</code> bucket and access is enforced by Supabase row-level policies.</p></div></div></div>
+  <div class="container">
+    <div class="hero"><div class="hero-box"><h1>Documents</h1><p>Live document metadata from Supabase. Client files remain in the private <code>client-documents</code> bucket under administrator/client-scoped access controls.</p><p id="records-summary">Loading…</p></div></div>
+    <div class="table-wrap" id="records-table"><p>Loading document records…</p></div>
+  </div>
   <div class="footer">© Johnson Strategic Solutions | Admin Platform</div>
-  <script type="module" src="auth-guard.js"></script><script src="load-navbar.js"></script>
+  <script type="module" src="auth-guard.js"></script><script src="load-navbar.js"></script><script type="module" src="admin-records.js"></script>
 </body></html>
