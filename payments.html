@@ -4,20 +4,17 @@
 <body data-admin-view="payments">
   <div id="navbar" data-navbar="navbar-admin.html"></div>
   <div class="container">
-    <div class="hero"><div class="hero-box"><h1>Payments</h1><p>Live billing records from Supabase. Attach a real HTTPS checkout link only after the client has accepted the corresponding individualized quote.</p><p id="records-summary">Loading…</p></div></div>
-    <div class="form-card" style="margin-top:0;max-width:100%;">
-      <h3>Attach secure checkout link</h3>
-      <form id="payment-link-form">
-        <label for="payment-link-payment">Pending payment</label>
-        <select id="payment-link-payment" required><option value="">Select payment record</option></select>
-        <label for="payment-link-url">Secure checkout URL</label>
-        <input id="payment-link-url" type="url" inputmode="url" placeholder="https://..." required>
-        <button id="payment-link-submit" class="button" type="submit">Save secure checkout link</button>
-        <p id="payment-link-status" class="status-message" role="status" aria-live="polite"></p>
-      </form>
+    <div class="hero"><div class="hero-box">
+      <h1>Payments</h1>
+      <p>Billing records are tied to accepted individualized quotes. Checkout URLs and Stripe settlement fields are server-controlled; administrators cannot paste arbitrary payment links or manually mark provider settlement complete.</p>
+      <p id="records-summary">Loading…</p>
+    </div></div>
+    <div class="panel" style="margin-bottom:22px;">
+      <h3>Provider status</h3>
+      <p>Eligible clients start hosted Checkout from their authenticated portal. Stripe webhooks are the authoritative source for paid, failed, refunded, and disputed states. Credit-service billing restrictions remain enforced before checkout.</p>
     </div>
     <div class="table-wrap" id="records-table"><p>Loading payment records…</p></div>
   </div>
   <div class="footer">© Johnson Strategic Solutions | Admin Platform</div>
-  <script type="module" src="auth-guard.js"></script><script src="load-navbar.js"></script><script type="module" src="admin-records.js"></script><script type="module" src="payments-admin.js"></script>
+  <script type="module" src="auth-guard.js"></script><script src="load-navbar.js"></script><script type="module" src="admin-records.js"></script>
 </body></html>
