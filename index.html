@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="visibility:hidden;">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,28 +7,34 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <div id="navbar" data-navbar="navbar-admin.html"></div>
+
   <div class="container">
     <div class="panel hero-panel center">
       <h1>Admin Dashboard</h1>
-      <p>Lead management, client tracking, intake review, and operational control center.</p>
+      <p>Welcome, <span id="admin-name">Administrator</span>. Lead management, client tracking, intake review, and operational control are restricted to authenticated administrators.</p>
 
       <div class="grid">
         <div class="panel">
-          <h2>New Leads</h2>
-          <p>Monitor incoming intake submissions.</p>
+          <h2 id="new-leads">0</h2>
+          <p>New intake submissions</p>
         </div>
 
         <div class="panel">
-          <h2>Active Clients</h2>
-          <p>Track disputes, funding, and platform projects.</p>
+          <h2 id="active-clients">0</h2>
+          <p>Active clients</p>
         </div>
 
         <div class="panel">
-          <h2>Pipeline</h2>
-          <p>Manage service progression and follow-up workflows.</p>
+          <h2 id="open-cases">0</h2>
+          <p>Open cases</p>
         </div>
       </div>
     </div>
   </div>
+
+  <script src="load-navbar.js"></script>
+  <script type="module" src="auth-guard.js"></script>
+  <script type="module" src="admin-data.js"></script>
 </body>
 </html>
