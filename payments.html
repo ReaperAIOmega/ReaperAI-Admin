@@ -4,9 +4,20 @@
 <body data-admin-view="payments">
   <div id="navbar" data-navbar="navbar-admin.html"></div>
   <div class="container">
-    <div class="hero"><div class="hero-box"><h1>Payments</h1><p>Live billing records from Supabase. Payment data remains protected by administrator-only and client-scoped row-level security.</p><p id="records-summary">Loading…</p></div></div>
+    <div class="hero"><div class="hero-box"><h1>Payments</h1><p>Live billing records from Supabase. Attach a real HTTPS checkout link only after the client has accepted the corresponding individualized quote.</p><p id="records-summary">Loading…</p></div></div>
+    <div class="form-card" style="margin-top:0;max-width:100%;">
+      <h3>Attach secure checkout link</h3>
+      <form id="payment-link-form">
+        <label for="payment-link-payment">Pending payment</label>
+        <select id="payment-link-payment" required><option value="">Select payment record</option></select>
+        <label for="payment-link-url">Secure checkout URL</label>
+        <input id="payment-link-url" type="url" inputmode="url" placeholder="https://..." required>
+        <button id="payment-link-submit" class="button" type="submit">Save secure checkout link</button>
+        <p id="payment-link-status" class="status-message" role="status" aria-live="polite"></p>
+      </form>
+    </div>
     <div class="table-wrap" id="records-table"><p>Loading payment records…</p></div>
   </div>
   <div class="footer">© Johnson Strategic Solutions | Admin Platform</div>
-  <script type="module" src="auth-guard.js"></script><script src="load-navbar.js"></script><script type="module" src="admin-records.js"></script>
+  <script type="module" src="auth-guard.js"></script><script src="load-navbar.js"></script><script type="module" src="admin-records.js"></script><script type="module" src="payments-admin.js"></script>
 </body></html>
