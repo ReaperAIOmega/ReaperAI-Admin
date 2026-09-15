@@ -7,7 +7,7 @@ const fmtMoney = (value, currency = 'USD') => {
 };
 const statusClass = (value) => {
   const v = String(value || '').toLowerCase();
-  if (['active','paid','approved','complete','completed'].includes(v)) return 'status-active';
+  if (['active','paid','approved','complete','completed','converted'].includes(v)) return 'status-active';
   if (['new','open'].includes(v)) return 'status-new';
   return 'status-pending';
 };
@@ -36,14 +36,19 @@ function renderTable(container, columns, rows) {
     const tr = document.createElement('tr');
     for (const column of columns) {
       const td = document.createElement('td');
-      const value = column.render ? column.render(row) : row[column.key];
-      if (column.status) {
-        const badge = document.createElement('span');
-        badge.className = `status ${statusClass(value)}`;
-        badge.textContent = text(value);
-        td.appendChild(badge);
+      if (column.node) {
+        const node = column.node(row);
+        if (node) td.appendChild(node);
       } else {
-        td.textContent = text(value);
+        const value = column.render ? column.render(row) : row[column.key];
+        if (column.status) {
+          const badge = document.createElement('span');
+          badge.className = `status ${statusClass(value)}`;
+          badge.textContent = text(value);
+          td.appendChild(badge);
+        } else {
+          td.textContent = text(value);
+        }
       }
       tr.appendChild(td);
     }
@@ -51,6 +56,47 @@ function renderTable(container, columns, rows) {
   }
   table.appendChild(tbody);
   container.appendChild(table);
+}
+
+function showConversionResult(result) {
+  const box = document.getElementById('conversion-result');
+  const message = document.getElementById('conversion-message');
+  const url = document.getElementById('conversion-url');
+  const copy = document.getElementById('copy-conversion-url');
+  if (!box || !message || !url) return;
+  message.textContent = `${result.full_name || result.email || 'Client'} was converted successfully. Send the activation link through an approved communication channel. It expires in 48 hours.`;
+  url.value = result.onboarding_url || '';
+  box.hidden = false;
+  copy?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(url.value);
+      copy.textContent = 'Copied';
+      setTimeout(() => { copy.textContent = 'Copy activation link'; }, 1200);
+    } catch {
+      url.select();
+    }
+  }, { once: true });
+  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+async function convertIntake(supabase, row, button) {
+  const ok = window.confirm(`Approve ${row.full_name || row.email} and create the client account, onboarding case, task, and secure portal activation link?`);
+  if (!ok) return;
+
+  button.disabled = true;
+  button.textContent = 'Creating…';
+  const { data, error } = await supabase.functions.invoke('convert-intake', { body: { intake_id: row.id } });
+  if (error || !data?.ok) {
+    console.error('Intake conversion failed', error, data);
+    button.disabled = false;
+    button.textContent = 'Approve & create client';
+    window.alert('Client conversion could not be completed. No partial client should be used; review the backend error before retrying.');
+    return;
+  }
+
+  button.textContent = 'Converted';
+  showConversionResult(data);
+  await loadView(window.reaperAdmin);
 }
 
 async function loadView({ supabase }) {
@@ -79,6 +125,19 @@ async function loadView({ supabase }) {
       { label: 'Funding Need', render: (r) => fmtMoney(r.funding_amount_needed) },
       { label: 'Status', key: 'status', status: true },
       { label: 'Submitted', render: (r) => fmtDate(r.submitted_at) },
+      {
+        label: 'Action',
+        node: (r) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'button';
+          const isNew = String(r.status || '').toLowerCase() === 'new';
+          button.textContent = isNew ? 'Approve & create client' : 'Converted';
+          button.disabled = !isNew;
+          if (isNew) button.addEventListener('click', () => convertIntake(supabase, r, button));
+          return button;
+        },
+      },
     ];
   } else if (view === 'documents') {
     query = supabase.from('documents').select('id,client_id,file_name,category,review_status,file_size_bytes,uploaded_at').order('uploaded_at', { ascending: false });
