@@ -19,7 +19,7 @@ const strongEnough = (value) =>
 
 form?.addEventListener('submit', async (event) => {
   event.preventDefault();
-  const { supabase, session } = await ready;
+  const { supabase } = await ready;
   const password = passwordInput?.value ?? '';
   const confirm = confirmInput?.value ?? '';
 
@@ -44,12 +44,8 @@ form?.addEventListener('submit', async (event) => {
     return;
   }
 
-  const { error: securityError } = await supabase
-    .from('account_security')
-    .update({ password_initialized: true, updated_at: new Date().toISOString() })
-    .eq('profile_id', session.user.id);
-
-  if (securityError) {
+  const { data, error: completionError } = await supabase.functions.invoke('complete-admin-password-initialization', { body: {} });
+  if (completionError || !data?.ok) {
     status.textContent = 'Password changed, but account initialization could not be completed. Sign out and contact the administrator.';
     submitButton.disabled = false;
     submitButton.textContent = 'Set new password';
