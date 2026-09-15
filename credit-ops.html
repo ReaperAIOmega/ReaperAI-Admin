@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" style="visibility:hidden;">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Johnson Strategic Solutions | Credit Operations</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+<div id="navbar" data-navbar="navbar-admin.html"></div>
+<div class="container">
+  <div class="hero"><div class="hero-box"><h1>Credit Operations</h1><p>Structured report review, issue classification, and dispute-round tracking. This workspace does not assume that an item is inaccurate and does not automate indiscriminate disputes.</p></div></div>
+  <div class="grid-2">
+    <div class="card"><h3>Add credit report record</h3><form id="report-form"><label>Client</label><select id="report-client" required></select><label>Credit case</label><select id="report-case" required></select><label>Report date</label><input id="report-date" type="date"><label>Source</label><input id="report-source" maxlength="120" placeholder="Example: client-provided three-bureau report"><button class="button" type="submit">Add report</button><p id="report-status" class="status-message"></p></form></div>
+    <div class="card"><h3>Add tradeline</h3><form id="tradeline-form"><label>Report</label><select id="tradeline-report" required></select><label>Bureau</label><select id="tradeline-bureau" required><option>Experian</option><option>Equifax</option><option>TransUnion</option><option>Other</option></select><label>Furnisher</label><input id="tradeline-furnisher" maxlength="200" required><label>Masked account reference</label><input id="tradeline-account" maxlength="80" placeholder="Never enter a full account number"><label>Account status</label><input id="tradeline-status" maxlength="120"><label>Balance</label><input id="tradeline-balance" type="number" step="0.01"><button class="button" type="submit">Add tradeline</button><p id="tradeline-form-status" class="status-message"></p></form></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><h3>Classify issue</h3><form id="issue-form"><label>Client</label><select id="issue-client" required></select><label>Credit case</label><select id="issue-case" required></select><label>Bureau</label><select id="issue-bureau"><option value="">Not bureau-specific</option><option>Experian</option><option>Equifax</option><option>TransUnion</option><option>Other</option></select><label>Issue code</label><input id="issue-code" maxlength="80" required placeholder="Internal classification code"><label>Issue type</label><input id="issue-type" maxlength="160" required placeholder="Example: duplicate reporting"><label>Description</label><textarea id="issue-description" maxlength="4000" required></textarea><label>Severity</label><select id="issue-severity"><option>low</option><option selected>medium</option><option>high</option><option>critical</option></select><button class="button" type="submit">Add issue</button><p id="issue-status" class="status-message"></p></form></div>
+    <div class="card"><h3>Create dispute round</h3><form id="round-form"><label>Client</label><select id="round-client" required></select><label>Credit case</label><select id="round-case" required></select><label>Round number</label><input id="round-number" type="number" min="1" max="20" value="1" required><label>Target type</label><select id="round-target-type"><option value="cra">CRA</option><option value="furnisher">Furnisher</option><option value="collector">Collector</option><option value="other">Other</option></select><label>Target name</label><input id="round-target-name" maxlength="200" required><label>Bureau</label><select id="round-bureau"><option value="">Not applicable</option><option>Experian</option><option>Equifax</option><option>TransUnion</option><option>Other</option></select><label>Method</label><input id="round-method" maxlength="100" placeholder="Example: certified mail"><button class="button" type="submit">Create draft round</button><p id="round-status" class="status-message"></p></form></div>
+  </div>
+  <div class="table-wrap"><h3>Credit reports</h3><div id="reports-list">Loading…</div></div>
+  <div class="table-wrap"><h3>Classified issues</h3><div id="issues-list">Loading…</div></div>
+  <div class="table-wrap"><h3>Dispute rounds</h3><div id="rounds-list">Loading…</div></div>
+</div>
+<div class="footer">© Johnson Strategic Solutions | Admin Platform</div>
+<script type="module" src="auth-guard.js"></script><script src="load-navbar.js"></script><script type="module" src="credit-ops.js"></script>
+</body></html>
