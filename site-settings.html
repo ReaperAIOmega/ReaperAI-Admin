@@ -1,9 +1,14 @@
 <!DOCTYPE html>
 <html lang="en" style="visibility:hidden;">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Johnson Strategic Solutions | Site Settings</title><link rel="stylesheet" href="styles.css"></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Johnson Strategic Solutions | Platform Settings</title><link rel="stylesheet" href="styles.css"></head>
 <body>
   <div id="navbar" data-navbar="navbar-admin.html"></div>
-  <div class="container"><div class="hero"><div class="hero-box"><h1>Site Settings</h1><p>Authenticated platform-settings workspace. Sensitive configuration remains server-side and is never embedded in the public site repositories.</p></div></div></div>
+  <div class="container">
+    <div class="hero"><div class="hero-box"><h1>Platform Settings</h1><p>Authenticated platform controls. Privileged provider secrets are never embedded in this browser application.</p></div></div>
+    <div class="card"><h2>REAPER JARVIS device pairing</h2><p>Pair the private Windows desktop to the production platform using a one-time code. Pairing requires an MFA-verified administrator session. The resulting device credential is stored by JARVIS using OS-backed encrypted storage and can be revoked here.</p><label for="device-name">Device name</label><input id="device-name" maxlength="120" value="Bobby HP — REAPER JARVIS"><button id="create-pairing" class="button" type="button">Generate 10-minute pairing code</button><div id="pairing-result" class="panel" hidden style="margin-top:14px;"><p id="pairing-message"></p><input id="pairing-code" readonly><button id="copy-pairing" class="btn-secondary" type="button">Copy pairing code</button></div><p id="pairing-status" class="status-message"></p></div>
+    <div class="table-wrap"><h2>Paired JARVIS devices</h2><div id="device-list">Loading…</div></div>
+    <div class="card"><h2>Provider configuration gates</h2><p>Secrets and paid-plan controls remain in their provider dashboards. This workspace reports only application-managed settings; it does not display API keys, SMTP passwords, Stripe secrets, or service-role credentials.</p></div>
+  </div>
   <div class="footer">© Johnson Strategic Solutions | Admin Platform</div>
-  <script type="module" src="auth-guard.js"></script><script src="load-navbar.js"></script>
+  <script type="module" src="auth-guard.js"></script><script src="load-navbar.js"></script><script type="module" src="site-settings.js"></script>
 </body></html>
