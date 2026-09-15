@@ -4,7 +4,14 @@
 <body data-admin-view="clients">
   <div id="navbar" data-navbar="navbar-admin.html"></div>
   <div class="container">
-    <div class="hero"><div class="hero-box"><h1>Clients</h1><p>Live client records from Supabase. Access is restricted to authenticated administrators and enforced by row-level security.</p><p id="records-summary">Loading…</p></div></div>
+    <div class="hero"><div class="hero-box"><h1>Clients</h1><p>Live client records from Supabase. Onboarding links can be reissued only while a client has not completed password initialization.</p><p id="records-summary">Loading…</p></div></div>
+    <div id="onboarding-result" class="panel" hidden style="margin-bottom:22px;">
+      <h3>Client activation link</h3>
+      <p id="onboarding-message"></p>
+      <label for="onboarding-url">One-time portal activation link</label>
+      <input id="onboarding-url" type="text" readonly>
+      <div class="button-row"><button id="copy-onboarding-url" class="button" type="button">Copy activation link</button></div>
+    </div>
     <div class="table-wrap" id="records-table"><p>Loading client records…</p></div>
   </div>
   <div class="footer">© Johnson Strategic Solutions | Admin Platform</div>
