@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en" style="visibility:hidden;">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Johnson Strategic Solutions | Messages</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+  <div id="navbar" data-navbar="navbar-admin.html"></div>
+  <div class="container">
+    <div class="hero"><div class="hero-box"><h1>Secure Client Messages</h1><p>Case and service communications retained inside the authenticated platform.</p></div></div>
+    <div class="grid-2">
+      <div class="card"><h3>Conversations</h3><div id="thread-list">Loading…</div><hr><h3>Start conversation</h3><form id="new-thread-form"><label for="thread-client">Client</label><select id="thread-client" required></select><label for="thread-subject">Subject</label><input id="thread-subject" maxlength="160" required><label for="thread-message">Message</label><textarea id="thread-message" maxlength="5000" required></textarea><button id="thread-submit" class="button" type="submit">Send</button><p id="thread-status" class="status-message"></p></form></div>
+      <div class="card"><h3 id="conversation-title">Select a conversation</h3><div id="conversation"></div><form id="reply-form" hidden><label for="reply-message">Reply</label><textarea id="reply-message" maxlength="5000" required></textarea><div class="button-row"><button id="reply-submit" class="button" type="submit">Send reply</button><button id="close-thread" class="btn-secondary" type="button">Close conversation</button></div><p id="reply-status" class="status-message"></p></form></div>
+    </div>
+  </div>
+  <div class="footer">© Johnson Strategic Solutions | Admin Platform</div>
+  <script type="module" src="auth-guard.js"></script><script src="load-navbar.js"></script><script type="module" src="messages-admin.js"></script>
+</body></html>
