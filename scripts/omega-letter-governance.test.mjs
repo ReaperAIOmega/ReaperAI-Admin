@@ -77,6 +77,20 @@ test('Obsolete claims and unresolved nonstandard placeholders are held',()=>{
   assert.equal(reviewLetterDraft(valid({body:valid().body+'\n{{UNVERIFIED_PERSONAL_DATA}}'})).ok,false);
 });
 
+test('Ten OMEGA v3 gates require approved source-document references',()=>{
+  const js=readFileSync(new URL('../letter-desk.js',import.meta.url),'utf8');
+  const html=readFileSync(new URL('../letter-desk.html',import.meta.url),'utf8');
+  const gates=['identity_authority','actor_coverage','facts_supported','evidence_complete',
+  'exclusions_checked','authority_applicable','jurisdiction_resolved',
+  'procedure_triggered','remedy_supported','reviewer_approved'];
+  for(const gate of gates) assert(js.includes("'"+gate+"'"),gate);
+  assert(html.includes('id="omega-ten-attestations"'));
+  assert(js.includes('collectOmegaDocumentAttestations()'));
+  assert(js.includes('review_status'));
+  assert(js.includes("upload_validation_status==='storage_validated'"));
+  assert(js.includes('attestations:validatedAttestations'));
+});
+
 test('Admin UI invokes the preflight rather than only displaying a checklist',()=>{
   const html=readFileSync(new URL('../letter-desk.html',import.meta.url),'utf8');
   const js=readFileSync(new URL('../letter-desk.js',import.meta.url),'utf8');
