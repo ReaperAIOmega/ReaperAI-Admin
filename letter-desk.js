@@ -161,7 +161,26 @@ el('letter-authorization-form').addEventListener('submit',async(event)=>{
       recipient_address:el('letter-recipient-address').value.trim(),
       subject:el('letter-subject').value.trim(),
       body_template:el('letter-body').value.trim(),
-      approved_by:admin.id,status:'approved'
+      approved_by:admin.id,status:'approved',
+      governance_snapshot:{
+        authority:review.authority,
+        version:review.governanceVersion,
+        route:review.route,
+        actor:el('letter-actor').value,
+        authority_status:el('letter-authority-status').value,
+        issue_id:el('letter-issue').value,
+        case_id:el('letter-case').value,
+        client_id:el('letter-client').value,
+        evidence_reference:el('letter-evidence-reference').value.trim(),
+        disputed_fact:issue.description.trim(),
+        evidence_notes:String(issue.evidence_notes||'').trim(),
+        recipient_name:el('letter-recipient').value.trim(),
+        recipient_address:el('letter-recipient-address').value.trim(),
+        facts_reviewed:el('letter-facts-reviewed').checked,
+        authority_reviewed:el('letter-authority-reviewed').checked,
+        recipient_verified:el('letter-recipient-verified').checked,
+        exact_text_reviewed:el('letter-exact-text-reviewed').checked
+      }
     };
     const {error}=await supabase.from('letter_authorizations').insert(payload);
     if(error)throw error;
