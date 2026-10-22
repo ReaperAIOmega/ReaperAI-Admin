@@ -16,3 +16,5 @@ jobs:
           node-version: 22
       - name: Verify static application
         run: node scripts/verify-static.mjs
+      - name: Verify password recovery behavior
+        run: node --test scripts/recovery.test.cjs
