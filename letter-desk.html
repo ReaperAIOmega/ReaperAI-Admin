@@ -13,6 +13,45 @@
 <label>Credit case</label><select id="letter-case" required></select>
 <label>Documented issue</label><select id="letter-issue" required></select>
 <label>Dispute round (optional)</label><select id="letter-round"></select>
+<fieldset style="margin:18px 0;padding:16px;border:1px solid #777">
+<legend>OMEGA evidence and authority preflight — reviewer required</legend>
+<p>Controlled draft stage: only documented CRA accuracy disputes can use a starter. Other legal routes remain on manual-review hold. No automatic sending.</p>
+<label for="letter-route">Correspondence route</label>
+<select id="letter-route" required>
+<option value="">Select route</option>
+<option value="cra_accuracy">CRA — documented accuracy dispute</option>
+<option value="cra_procedure_description">CRA — procedure description (manual review only)</option>
+<option value="furnisher_direct">Furnisher — direct dispute (manual review only)</option>
+<option value="collector_validation">Debt collector — validation (manual review only)</option>
+<option value="identity_theft_block">CRA — identity-theft block (manual review only)</option>
+</select>
+<label for="letter-actor">Verified recipient role</label>
+<select id="letter-actor" required>
+<option value="">Select actor</option><option value="cra">Consumer reporting agency</option>
+<option value="furnisher">Data furnisher</option><option value="collector">Debt collector</option>
+</select>
+<label for="letter-authority-status">Legal authority review status</label>
+<select id="letter-authority-status" required>
+<option value="">Unreviewed</option><option value="ACTIVE">ACTIVE</option>
+<option value="CONDITIONAL">CONDITIONAL — hold</option>
+<option value="PROPOSED">PROPOSED — hold</option>
+<option value="LEGACY">LEGACY — hold</option>
+<option value="RETIRED">RETIRED — hold</option>
+</select>
+<label for="letter-evidence-reference">Traceable evidence reference</label>
+<input id="letter-evidence-reference" maxlength="400" placeholder="Report date, bureau, tradeline field, supporting document ID" required>
+<p>The associated issue must also contain specific facts and evidence notes. Verify actual source documents before approval.</p>
+<label><input type="checkbox" id="letter-facts-reviewed"> I reviewed the original evidence and exact disputed fact.</label>
+<label><input type="checkbox" id="letter-authority-reviewed"> I checked current legal authority and route eligibility.</label>
+<label><input type="checkbox" id="letter-recipient-verified"> I verified the actor and full mailing address.</label>
+<label><input type="checkbox" id="letter-exact-text-reviewed"> I reviewed every statement in the exact final letter.</label>
+<div id="omega-evidence-documents" aria-live="polite"></div>
+<fieldset style="padding:16px;margin:16px 0;border:1px solid #777">
+<legend>OMEGA Gate v3 — ten documented, reviewed evidence attestations</legend>
+<p>Choose a previously approved client document for each independent review gate. Documents must be stored, storage-validated, case-bound and reviewed in the secure document system. Check relevance and applicability before selecting. These references are enforced by the production database, not just by this form.</p>
+<div id="omega-ten-attestations"></div>
+</fieldset>
+</fieldset>
 <label>Recipient name</label><input id="letter-recipient" maxlength="180" required placeholder="Credit reporting agency or furnisher">
 <label>Recipient full postal address</label><textarea id="letter-recipient-address" rows="3" maxlength="600" required placeholder="Street / PO Box, city, state, ZIP"></textarea>
 <label>Subject</label><input id="letter-subject" maxlength="240" required value="Dispute of inaccurate credit information">
