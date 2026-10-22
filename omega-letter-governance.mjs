@@ -133,8 +133,8 @@ export function reviewLetterDraft(input = {}) {
   if (authorityStatus !== 'ACTIVE' || (route && route.status !== 'ACTIVE')) {
     errors.push('Only a route with currently ACTIVE, verified authority can pass this release gate.');
   }
-  if (fact.length < 15) errors.push('Specify the exact disputed reporting fact.');
-  if (notes.length < 12) errors.push('Record the supporting evidence and the contradiction being investigated.');
+  if (fact.length < 15 || fact.length > 2000) errors.push('Specify the exact disputed reporting fact (15–2000 characters).');
+  if (notes.length < 12 || notes.length > 2500) errors.push('Record the supporting evidence and contradiction (12–2500 characters).');
   if (evidenceReference.length < 8 || evidenceReference.length > 400) errors.push('Provide a traceable evidence/report source reference.');
   if (recipientName.length < 2 || recipientAddress.length < 10) errors.push('Verify the recipient name and full postal address.');
   if (subject.length < 3 || subject.length > 240) errors.push('Provide a valid subject.');
