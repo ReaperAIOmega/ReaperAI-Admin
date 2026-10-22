@@ -7,6 +7,10 @@ const form = document.getElementById('recovery-form');
 const submitButton = document.getElementById('recovery-submit');
 const passwordField = document.getElementById('recovery-password');
 const confirmField = document.getElementById('recovery-confirm');
+const mfaForm = document.getElementById('recovery-mfa-form');
+const factorField = document.getElementById('recovery-factor');
+const codeField = document.getElementById('recovery-code');
+const verifyButton = document.getElementById('recovery-verify');
 
 // Keep recovery credentials out of history on every path, including failures.
 // Never log the callback or pass it to another page.
@@ -26,9 +30,42 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
 
 let recoverySessionValidated = false;
 let submitting = false;
+let verifying = false;
+let recoveryUserId = null;
+let verifiedFactors = [];
 const strongPassword = (value) =>
   value.length >= 14 && /[a-z]/.test(value) && /[A-Z]/.test(value) &&
   /\d/.test(value) && /[^A-Za-z0-9]/.test(value);
+
+async function preparePasswordEntry() {
+  recoverySessionValidated = false;
+  form.hidden = true;
+  mfaForm.hidden = true;
+  const assurance = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (assurance.error || !assurance.data?.currentLevel) throw new Error('Session unavailable');
+  if (assurance.data.nextLevel === 'aal2' && assurance.data.currentLevel !== 'aal2') {
+    const factors = await supabase.auth.mfa.listFactors();
+    if (factors.error) throw new Error('Factors unavailable');
+    verifiedFactors = (factors.data?.totp || []).filter(f => f.status === 'verified');
+    if (!verifiedFactors.length) {
+      status.textContent = 'This account requires an authentication method not supported on this recovery page. Contact your administrator; do not remove your security protection.';
+      return;
+    }
+    factorField.replaceChildren();
+    verifiedFactors.forEach((factor, index) => {
+      const option = document.createElement('option');
+      option.value = factor.id;
+      option.textContent = factor.friendly_name || `Authenticator ${index + 1}`;
+      factorField.appendChild(option);
+    });
+    mfaForm.hidden = false;
+    status.textContent = 'Recovery link verified. Enter the code from your authenticator app.';
+    return;
+  }
+  recoverySessionValidated = true;
+  form.hidden = false;
+  status.textContent = 'Recovery verified. Choose a new administrator password.';
+}
 
 async function initialize() {
   try {
@@ -58,12 +95,12 @@ async function initialize() {
     const verified = await supabase.auth.getUser();
     if (verified.error || !verified.data?.user ||
         verified.data.user.id !== result.data.session.user.id) throw new Error('Invalid user');
-    recoverySessionValidated = true;
-    form.hidden = false;
-    status.textContent = 'Recovery link verified. Choose a new administrator password.';
+    recoveryUserId = verified.data.user.id;
+    await preparePasswordEntry();
   } catch {
     recoverySessionValidated = false;
     form.hidden = true;
+    mfaForm.hidden = true;
     status.textContent = 'The recovery link is invalid or expired. Request a new recovery email.';
     await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
   } finally {
@@ -72,6 +109,38 @@ async function initialize() {
     for (const key of [...search.keys()]) search.delete(key);
   }
 }
+
+mfaForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  if (verifying || mfaForm.hidden || !recoveryUserId) return;
+  const code = codeField.value.trim();
+  if (!/^[0-9]{6}$/.test(code) || !verifiedFactors.some(f => f.id === factorField.value)) {
+    status.textContent = 'Choose your authenticator and enter its current six-digit code.';
+    return;
+  }
+  verifying = true;
+  verifyButton.disabled = true;
+  try {
+    const result = await supabase.auth.mfa.challengeAndVerify({ factorId: factorField.value, code });
+    if (result.error) throw result.error;
+    const user = await supabase.auth.getUser();
+    const assurance = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (user.error || user.data?.user?.id !== recoveryUserId ||
+        assurance.error || assurance.data?.currentLevel !== 'aal2') throw new Error('Verification incomplete');
+    mfaForm.hidden = true;
+    recoverySessionValidated = true;
+    form.hidden = false;
+    status.textContent = 'Authenticator verified. Choose a new administrator password.';
+  } catch (error) {
+    status.textContent = error?.status === 429
+      ? 'Too many verification attempts. Wait before trying another authenticator code.'
+      : 'Authenticator verification failed. Check the current code and your device clock, then try again. A new recovery email is not normally needed.';
+  } finally {
+    codeField.value = '';
+    verifying = false;
+    verifyButton.disabled = false;
+  }
+});
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -91,8 +160,26 @@ form.addEventListener('submit', async (event) => {
   try {
     const { error } = await supabase.auth.updateUser({ password });
     if (error) throw error;
-  } catch {
-    status.textContent = 'Password update could not be completed. Request a fresh recovery email or try a different password.';
+  } catch (error) {
+    const messages = {
+      same_password: 'Choose a password different from your existing password. You can retry on this page.',
+      weak_password: 'This password does not meet the account security policy. Choose a stronger password and retry here.',
+      over_request_rate_limit: 'Too many requests. Wait before retrying on this page.',
+      over_email_send_rate_limit: 'The email limit has been reached. Wait before retrying; do not request more recovery emails.',
+      session_not_found: 'Your recovery session expired. Request a new recovery email once the email limit has cleared.',
+      refresh_token_not_found: 'Your recovery session expired. Request a new recovery email once the email limit has cleared.',
+    };
+    if (error?.code === 'insufficient_aal') {
+      passwordField.value = '';
+      confirmField.value = '';
+      try { await preparePasswordEntry(); } catch {
+        recoverySessionValidated = false;
+        form.hidden = true;
+        status.textContent = 'Unable to verify your authentication level. Try recovery again when available.';
+      }
+    } else {
+      status.textContent = messages[error?.code] || 'Password update could not be completed. Check your connection and retry on this page. If you already submitted successfully, try signing in. Do not request repeated recovery emails.';
+    }
     submitButton.disabled = false;
     submitting = false;
     return;
