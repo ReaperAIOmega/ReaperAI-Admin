@@ -18,3 +18,7 @@ jobs:
         run: node scripts/verify-static.mjs
       - name: Verify password recovery behavior
         run: node --test scripts/recovery.test.cjs
+      - name: Check letter UI JavaScript syntax
+        run: node --check letter-desk.js
+      - name: Validate letter workflow integration
+        run: node --test scripts/letters.test.mjs

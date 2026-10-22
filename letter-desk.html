@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" style="visibility:hidden;">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Johnson Strategic Solutions | Letter Desk</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+<div id="navbar" data-navbar="navbar-admin.html"></div>
+<main class="container">
+<section class="hero"><div class="hero-box"><h1>Letter Desk</h1><p>Approve exact client-specific letter content; clients can generate and download a PDF or request LetterStream mailing. Mailing requires a separate verified provider job.</p></div></section>
+<section class="card" style="padding:24px;margin-bottom:24px">
+<h2>Authorize a client letter</h2>
+<p>Choose an existing credit case and a documented issue. Review the factual language and recipient address before granting the client access. This action does not mail anything.</p>
+<form id="letter-authorization-form">
+<label>Client</label><select id="letter-client" required></select>
+<label>Credit case</label><select id="letter-case" required></select>
+<label>Documented issue</label><select id="letter-issue" required></select>
+<label>Dispute round (optional)</label><select id="letter-round"></select>
+<label>Recipient name</label><input id="letter-recipient" maxlength="180" required placeholder="Credit reporting agency or furnisher">
+<label>Recipient full postal address</label><textarea id="letter-recipient-address" rows="3" maxlength="600" required placeholder="Street / PO Box, city, state, ZIP"></textarea>
+<label>Subject</label><input id="letter-subject" maxlength="240" required value="Dispute of inaccurate credit information">
+<label>Approved letter body</label><textarea id="letter-body" rows="17" maxlength="12000" required></textarea>
+<p>Available placeholders: <code>{{CLIENT_NAME}}</code>, <code>{{CLIENT_ADDRESS}}</code>, <code>{{RECIPIENT_NAME}}</code>, <code>{{RECIPIENT_ADDRESS}}</code>, <code>{{DATE}}</code>. Unresolved placeholders will block client generation.</p>
+<button class="button" type="button" id="letter-fill-template">Prepare factual starter letter</button>
+<button class="button" type="submit" id="letter-approve">Approve exact letter for client</button>
+<p id="letter-admin-status" role="status" aria-live="polite"></p>
+</form>
+</section>
+<section class="table-wrap" style="padding:22px;margin-bottom:24px"><h2>Client letter authorizations</h2><div id="letter-authorizations-list">Loading…</div></section>
+<section class="table-wrap" style="padding:22px;margin-bottom:24px"><h2>LetterStream requests</h2>
+<p>Requests are not mailings. Download the exact client PDF, review the details, and process in your LetterStream account. Record an actual provider job ID only after LetterStream acknowledges submission. No automatic charges or sends occur here.</p>
+<div id="letter-mail-queue">Loading…</div></section>
+</main>
+<div class="footer">© Johnson Strategic Solutions | Admin Platform</div>
+<script src="https://cdn.jsdelivr.net/npm/pdfmake@0.2.15/build/pdfmake.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfmake@0.2.15/build/vfs_fonts.js"></script>
+<script src="load-navbar.js"></script><script type="module" src="auth-guard.js"></script><script type="module" src="letter-desk.js"></script>
+</body></html>
