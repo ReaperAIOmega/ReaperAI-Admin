@@ -188,10 +188,11 @@ async function loadView({ supabase, profile }) {
       },
     ];
   } else if (view === 'intakes') {
-    query = supabase.from('intakes').select('id,full_name,email,phone,service_type,funding_amount_needed,status,submitted_at').order('submitted_at', { ascending: false });
+    query = supabase.from('intakes').select('id,full_name,email,phone,state,service_type,funding_amount_needed,status,submitted_at').order('submitted_at', { ascending: false });
     columns = [
       { label: 'Lead', key: 'full_name' },
       { label: 'Email', key: 'email' },
+      { label: 'State', key: 'state' },
       { label: 'Service', key: 'service_type' },
       { label: 'Funding Need', render: (r) => fmtMoney(r.funding_amount_needed) },
       { label: 'Status', key: 'status', status: true },
@@ -202,10 +203,18 @@ async function loadView({ supabase, profile }) {
           const button = document.createElement('button');
           button.type = 'button';
           button.className = 'button';
-          const isNew = String(r.status || '').toLowerCase() === 'new';
-          button.textContent = isNew ? 'Approve & create client' : 'Converted';
-          button.disabled = !isNew;
-          if (isNew) button.addEventListener('click', () => convertIntake(supabase, r, button));
+          const status = String(r.status || '').toLowerCase();
+          const serviceType = String(r.service_type || '').toLowerCase();
+          const isConsumerCredit = /credit[ _-]*(repair|audit|restoration)|consumer[ _-]*credit/.test(serviceType);
+          const requiresLegalReview = status === 'jurisdiction_review_pending' || isConsumerCredit;
+          // Georgia business services are still eligible; only consumer credit is held.
+          const eligibleBusiness = status === 'new' && !requiresLegalReview;
+          button.textContent = status === 'converted' ? 'Converted'
+            : requiresLegalReview ? 'Legal review required'
+            : eligibleBusiness ? 'Approve & create client'
+            : 'Not convertible';
+          button.disabled = !eligibleBusiness;
+          if (eligibleBusiness) button.addEventListener('click', () => convertIntake(supabase, r, button));
           return button;
         },
       },
