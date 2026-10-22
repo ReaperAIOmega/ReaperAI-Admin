@@ -16,6 +16,30 @@ const emailInput = document.getElementById('admin-email');
 const passwordInput = document.getElementById('admin-password');
 const submitButton = document.getElementById('admin-login-submit');
 const status = document.getElementById('admin-login-status');
+const resetButton = document.getElementById('admin-reset-password');
+const PASSWORD_RECOVERY_URL = 'https://admin.reaperai.com/reset-password.html';
+
+resetButton?.addEventListener('click', async () => {
+  const email = emailInput?.value.trim().toLowerCase();
+  if (!email) {
+    status.textContent = 'Enter your administrator email address first.';
+    return;
+  }
+  resetButton.disabled = true;
+  status.textContent = 'Requesting password recovery…';
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: PASSWORD_RECOVERY_URL,
+    });
+    if (error) throw error;
+    status.textContent = 'If this email is eligible, a password reset link has been sent. Open the latest email only.';
+  } catch {
+    status.textContent = 'Unable to send recovery email. Please retry after verifying the recovery URL is configured.';
+  } finally {
+    resetButton.disabled = false;
+  }
+});
+
 const params = new URLSearchParams(window.location.search);
 
 if (emailInput && params.get('email')) emailInput.value = params.get('email');
