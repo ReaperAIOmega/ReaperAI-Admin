@@ -1,7 +1,7 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { dirname, join, normalize } from 'node:path';
 const root=process.cwd();
-const required=['index.html','login.html','auth-guard.js','mfa-enroll.html','mfa-challenge.html','clients.html','intakes.html','contacts.html','messages.html','cases.html','tasks.html','credit-ops.html','funding-ops.html','agreements.html','quotes.html','documents.html','payments.html','navbar-admin.html','site-settings.html','site-settings.js'];
+const required=['index.html','login.html','reset-password.html','reset-password.js','auth-guard.js','mfa-enroll.html','mfa-challenge.html','clients.html','intakes.html','contacts.html','messages.html','cases.html','tasks.html','credit-ops.html','funding-ops.html','agreements.html','quotes.html','documents.html','payments.html','navbar-admin.html','site-settings.html','site-settings.js'];
 const failures=[];
 const privilegedPattern=new RegExp([
   ['SUPABASE','SERVICE','ROLE','KEY'].join('_'),
