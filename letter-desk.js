@@ -2,7 +2,8 @@ import { buildCraAccuracyStarter, reviewLetterDraft } from './omega-letter-gover
 const ready = window.reaperAdmin ? Promise.resolve(window.reaperAdmin)
   : new Promise(resolve => document.addEventListener('reaper:admin-ready',e=>resolve(e.detail),{once:true}));
 const el=id=>document.getElementById(id);
-let supabase,admin,clients=[],cases=[],issues=[],rounds=[],authorizations=[],letters=[],requests=[];
+let supabase,admin,clients=[],cases=[],issues=[],rounds=[],authorizations=[],letters=[],requests=[],documents=[];
+const EVIDENCE_GATE_KEYS=['identity_authority','actor_coverage','facts_supported','evidence_complete','exclusions_checked','authority_applicable','jurisdiction_resolved','procedure_triggered','remedy_supported','reviewer_approved'];
 const fmt=v=>v?new Date(v).toLocaleString():'—';
 const option=(v,label)=>{const o=document.createElement('option');o.value=v;o.textContent=label;return o;};
 const setOptions=(id,data,label,placeholder='Select')=>{
@@ -22,10 +23,11 @@ async function reload() {
     supabase.from('dispute_rounds').select('id,client_id,case_id,target_name,round_number').order('created_at',{ascending:false}),
     supabase.from('letter_authorizations').select('id,client_id,case_id,subject,recipient_name,approved_at,status').order('approved_at',{ascending:false}),
     supabase.from('client_letters').select('id,client_id,subject,body_snapshot,content_hash,created_at').order('created_at',{ascending:false}),
-    supabase.from('letter_mail_requests').select('id,letter_id,client_id,recipient_name,recipient_address,mail_class,status,requested_at,provider_job_id,tracking_reference').order('requested_at',{ascending:false})
+    supabase.from('letter_mail_requests').select('id,letter_id,client_id,recipient_name,recipient_address,mail_class,status,requested_at,provider_job_id,tracking_reference').order('requested_at',{ascending:false}),
+    supabase.from('documents').select('id,client_id,case_id,file_name,review_status,upload_validation_status,reviewed_by,reviewed_at').order('uploaded_at',{ascending:false})
   ];
   const res=await Promise.all(queries);for(const q of res)if(q.error)throw q.error;
-  [clients,cases,issues,rounds,authorizations,letters,requests]=res.map(x=>x.data||[]);
+  [clients,cases,issues,rounds,authorizations,letters,requests,documents]=res.map(x=>x.data||[]);
   renderSelectors();renderAuthorizations();renderQueue();
 }
 function renderSelectors(){
@@ -38,11 +40,45 @@ function renderSelectors(){
   setOptions('letter-case',clientCases,c=>c.title||c.case_type);
   if(clientCases.some(c=>c.id===selectedCase))el('letter-case').value=selectedCase;
   renderIssueSelectors();
+  renderOmegaDocumentAttestations();
 }
 function renderIssueSelectors(){
   const caseId=el('letter-case').value;
   setOptions('letter-issue',issues.filter(i=>i.case_id===caseId),i=>i.issue_type+' — '+i.description.slice(0,75));
   setOptions('letter-round',rounds.filter(r=>r.case_id===caseId),r=>`R${r.round_number} — ${r.target_name}`,'No round selected');
+}
+function renderOmegaDocumentAttestations(){
+  const container=el('omega-ten-attestations');
+  const notice=el('omega-evidence-documents');
+  const clientId=el('letter-client').value;
+  const caseId=el('letter-case').value;
+  const eligible=documents.filter(d=>
+    d.client_id===clientId && (d.case_id===caseId || d.case_id===null) &&
+    d.review_status==='approved' && d.upload_validation_status==='storage_validated' &&
+    Boolean(d.reviewed_by) && Boolean(d.reviewed_at)
+  );
+  notice.textContent=eligible.length
+    ? eligible.length+' verified, reviewed case documents available.'
+    : 'No approved, storage-validated client documents are available. Approve evidence in JARVIS Documents before authorizing a letter.';
+  container.replaceChildren();
+  for(const key of EVIDENCE_GATE_KEYS){
+    const label=document.createElement('label');
+    label.setAttribute('for','omega-att-'+key);
+    label.textContent=key.replaceAll('_',' ')+' — reviewed evidence reference';
+    const select=document.createElement('select');
+    select.id='omega-att-'+key;
+    select.required=true;
+    select.append(option('','Select a reviewed, relevant document'));
+    for(const d of eligible)select.append(option(d.id,d.file_name+' · '+d.id.slice(0,8)));
+    container.append(label,select);
+  }
+}
+function collectOmegaDocumentAttestations(){
+  return Object.fromEntries(EVIDENCE_GATE_KEYS.map(key=>{
+    const reference=el('omega-att-'+key)?.value||'';
+    if(!reference)throw new Error('A reviewed evidence reference is required for '+key.replaceAll('_',' ')+'.');
+    return [key,{passed:true,reference}];
+  }));
 }
 function renderAuthorizations() {
   const wrap=el('letter-authorizations-list');wrap.replaceChildren();
@@ -111,7 +147,7 @@ function renderQueue(){
   }
 }
 el('letter-client').addEventListener('change',renderSelectors);
-el('letter-case').addEventListener('change',renderIssueSelectors);
+el('letter-case').addEventListener('change',()=>{renderIssueSelectors();renderOmegaDocumentAttestations();});
 el('letter-fill-template').addEventListener('click',()=>{
   if (el('letter-route').value !== 'cra_accuracy' || el('letter-actor').value !== 'cra') {
     el('letter-admin-status').textContent='Only a CRA accuracy-dispute starter is enabled. Other routes require separately vetted content.';
@@ -153,6 +189,7 @@ el('letter-authorization-form').addEventListener('submit',async(event)=>{
       el('letter-admin-status').textContent='Approval blocked: '+review.errors.join(' ');
       return;
     }
+    const validatedAttestations=collectOmegaDocumentAttestations();
     if(!window.confirm('Authorize this exact letter for the selected client? It will become immutable.'))return;
     const payload={
       client_id:el('letter-client').value,case_id:el('letter-case').value,
@@ -179,7 +216,8 @@ el('letter-authorization-form').addEventListener('submit',async(event)=>{
         facts_reviewed:el('letter-facts-reviewed').checked,
         authority_reviewed:el('letter-authority-reviewed').checked,
         recipient_verified:el('letter-recipient-verified').checked,
-        exact_text_reviewed:el('letter-exact-text-reviewed').checked
+        exact_text_reviewed:el('letter-exact-text-reviewed').checked,
+        attestations:validatedAttestations
       }
     };
     const {error}=await supabase.from('letter_authorizations').insert(payload);
