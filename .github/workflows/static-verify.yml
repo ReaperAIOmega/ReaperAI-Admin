@@ -22,3 +22,7 @@ jobs:
         run: node --check letter-desk.js
       - name: Validate letter workflow integration
         run: node --test scripts/letters.test.mjs
+      - name: Verify OMEGA governance module syntax and deterministic gates
+        run: |
+          node --check omega-letter-governance.mjs
+          node --test scripts/omega-letter-governance.test.mjs
