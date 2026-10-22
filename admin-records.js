@@ -205,7 +205,7 @@ async function loadView({ supabase, profile }) {
           button.className = 'button';
           const status = String(r.status || '').toLowerCase();
           const serviceType = String(r.service_type || '').toLowerCase();
-          const isConsumerCredit = /credit[\\s_-]*(repair|audit|restoration)|consumer[\\s_-]*credit/.test(serviceType);
+          const isConsumerCredit = /credit[ _-]*(repair|audit|restoration)|consumer[ _-]*credit/.test(serviceType);
           const requiresLegalReview = status === 'jurisdiction_review_pending' || isConsumerCredit;
           // Georgia business services are still eligible; only consumer credit is held.
           const eligibleBusiness = status === 'new' && !requiresLegalReview;
