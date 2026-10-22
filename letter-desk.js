@@ -1,3 +1,4 @@
+import { buildCraAccuracyStarter, reviewLetterDraft } from './omega-letter-governance.mjs';
 const ready = window.reaperAdmin ? Promise.resolve(window.reaperAdmin)
   : new Promise(resolve => document.addEventListener('reaper:admin-ready',e=>resolve(e.detail),{once:true}));
 const el=id=>document.getElementById(id);
@@ -112,28 +113,46 @@ function renderQueue(){
 el('letter-client').addEventListener('change',renderSelectors);
 el('letter-case').addEventListener('change',renderIssueSelectors);
 el('letter-fill-template').addEventListener('click',()=>{
+  if (el('letter-route').value !== 'cra_accuracy' || el('letter-actor').value !== 'cra') {
+    el('letter-admin-status').textContent='Only a CRA accuracy-dispute starter is enabled. Other routes require separately vetted content.';
+    return;
+  }
   const issue=issues.find(x=>x.id===el('letter-issue').value);
-  if(!issue){el('letter-admin-status').textContent='Select a factual issue first.';return;}
-  const facts=issue.description.trim();
-  const evidence=String(issue.evidence_notes||'').trim();
-  el('letter-body').value=[
-    '{{CLIENT_NAME}}','{{CLIENT_ADDRESS}}','', '{{DATE}}','',
-    '{{RECIPIENT_NAME}}','{{RECIPIENT_ADDRESS}}','',
-    'Re: '+(el('letter-subject').value||'Disputed credit-report information'),'',
-    'To whom it may concern:','',
-    'I am writing to dispute the accuracy or completeness of the following information in my credit file:',
-    facts,'',
-    evidence ? 'The records I am relying on include: '+evidence : 'I will provide supporting documentation as available.',
-    '',
-    'Please conduct an appropriate investigation of the specific information identified above and correct or delete information that cannot be verified as accurate and complete, as applicable. Please send me the results and any updated report to which I am entitled.','',
-    'Sincerely,','{{CLIENT_NAME}}'
-  ].join('\n');
-  el('letter-admin-status').textContent='Starter prepared. Verify facts, recipient and every statement before approval.';
+  const prepared=buildCraAccuracyStarter({
+    issue, evidenceReference:el('letter-evidence-reference').value
+  });
+  if (!prepared.ok) {
+    el('letter-admin-status').textContent=prepared.error;
+    return;
+  }
+  el('letter-subject').value='Dispute of specifically inaccurate or incomplete report information';
+  el('letter-body').value=prepared.text;
+  el('letter-admin-status').textContent='OMEGA starter prepared. Inspect the source documents, current law, recipient, and every final statement before approval.';
 });
 el('letter-authorization-form').addEventListener('submit',async(event)=>{
   event.preventDefault();
   const button=el('letter-approve');button.disabled=true;
   try{
+    const issue=issues.find(x=>x.id===el('letter-issue').value);
+    const review=reviewLetterDraft({
+      route:el('letter-route').value,
+      actor:el('letter-actor').value,
+      authorityStatus:el('letter-authority-status').value,
+      evidenceReference:el('letter-evidence-reference').value,
+      issue,
+      recipientName:el('letter-recipient').value,
+      recipientAddress:el('letter-recipient-address').value,
+      subject:el('letter-subject').value,
+      body:el('letter-body').value,
+      factsReviewed:el('letter-facts-reviewed').checked,
+      authorityReviewed:el('letter-authority-reviewed').checked,
+      recipientVerified:el('letter-recipient-verified').checked,
+      exactTextReviewed:el('letter-exact-text-reviewed').checked
+    });
+    if (!review.ok) {
+      el('letter-admin-status').textContent='Approval blocked: '+review.errors.join(' ');
+      return;
+    }
     if(!window.confirm('Authorize this exact letter for the selected client? It will become immutable.'))return;
     const payload={
       client_id:el('letter-client').value,case_id:el('letter-case').value,
