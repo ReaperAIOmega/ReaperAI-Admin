@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" style="visibility:hidden">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REAPER | Synthetic Funding Artifact Review</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="navbar" data-navbar="navbar-admin.html"></div>
+  <main class="container">
+    <div class="hero"><div class="hero-box">
+      <h1>Synthetic Funding Artifact Review</h1>
+      <p>Staging-only, authenticated AAL2 review of the two named $250K fictional artifacts. No customer release, lender advice, payment, or production authorization.</p>
+      <p><strong>Review process:</strong> Obtain the immutable PDF/XLSX from the authorized staging administrator download location. Inspect the actual files (Excel in desktop Excel), select each file here to verify its bytes locally, and record personal review and exact-version approval separately.</p>
+      <p>The browser reads your selected file locally to calculate SHA-256; it does not upload it. A hash match is integrity evidence, not a substitute for inspecting its contents.</p>
+      <p id="artifact-review-status" role="status" aria-live="polite">Checking administrator session…</p>
+    </div></div>
+    <section id="artifact-review-items" aria-label="Funding artifact reviews"></section>
+    <p><a href="documents.html">Back to Documents</a></p>
+  </main>
+  <div class="footer">© Johnson Strategic Solutions | Synthetic Staging Only</div>
+  <script type="module" src="auth-guard.js"></script>
+  <script src="load-navbar.js"></script>
+  <script type="module" src="funding-artifact-review.js"></script>
+</body>
+</html>
