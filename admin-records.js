@@ -167,6 +167,10 @@ async function reviewDocument(supabase, profile, row, reviewStatus, button) {
 }
 
 async function loadView({ supabase, profile }) {
+  const reviewLink = document.getElementById('synthetic-artifact-review-link');
+  if (reviewLink) reviewLink.hidden = !(profile?.role === 'admin'
+    && ['localhost', '127.0.0.1'].includes(location.hostname)
+    && supabase?.supabaseUrl === 'https://qemjnekgcbuddayzhdtr.supabase.co');
   const view = document.body.dataset.adminView;
   const container = document.getElementById('records-table');
   const summary = document.getElementById('records-summary');
@@ -239,9 +243,9 @@ async function loadView({ supabase, profile }) {
           open.addEventListener('click', () => openDocument(supabase, r, open));
           if (isCanonicalFundingArtifact(r)) {
             const label = document.createElement('span');
-            label.textContent = 'Exact-version funding review required; unavailable in this view.';
-            label.title = 'Approval requires authenticated administrator MFA, artifact digest verification and the canonical funding review workflow.';
-            wrap.append(open, label);
+            label.textContent = 'Private canonical artifact; download via authorized staging storage, then use the exact-version review page.';
+            label.title = 'Direct signed URL access is intentionally blocked for canonical funding bytes. Review must use the separate AAL2 workflow.';
+            wrap.append(label);
             return wrap;
           }
           const approve = document.createElement('button');
