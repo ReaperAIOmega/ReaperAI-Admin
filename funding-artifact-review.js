@@ -73,6 +73,12 @@ function makeCard(ctx, target, data) {
     action.disabled = !same() || !box.checked || !notes.value.trim()
       || !['REVIEW_REQUESTED', 'REVIEWED'].includes(data.state);
   };
+  picker.addEventListener('change', () => {
+    matches.delete(target.id);
+    box.checked = false;
+    result.textContent = 'File selection changed. Verify SHA-256 and inspect this file before review.';
+    updateReady();
+  });
   verify.addEventListener('click', async () => {
     const selected = picker.files?.[0];
     if (!selected) { result.textContent = 'Choose the file first.'; return; }
