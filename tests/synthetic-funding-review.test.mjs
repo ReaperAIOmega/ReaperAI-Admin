@@ -18,6 +18,25 @@ test('synthetic funding review JavaScript parses and stays restricted to staging
   assert.match(js, /auth\.getUser\(\)/);
   assert.match(js, /getUser\(\)/);
 });
+test('localhost staging login and AAL2 guard do not silently reuse production', () => {
+  const guard = read('auth-guard.js');
+  const login = read('auth-login.js');
+  for (const src of [guard, login]) {
+    assert.match(src, /window\.location\.protocol === 'http:'/);
+    assert.match(src, /\['localhost', '127\.0\.0\.1'\]\.includes\(window\.location\.hostname\)/);
+    assert.match(src, /window\.location\.port === '4174'/);
+    assert.match(src, /STAGING_LOOPBACK\s*\? 'https:\/\/qemjnekgcbuddayzhdtr\.supabase\.co'/);
+    assert.match(src, /: 'https:\/\/itswbmjvuxumfjqkkqgx\.supabase\.co'/);
+    assert.match(src, /STAGING_LOOPBACK\s*\? 'sb_publishable_/);
+    assert.doesNotMatch(src, /service_role|sb_secret_/);
+  }
+  assert.match(guard, /STAGING_LOOPBACK \? '\/login\.html'/);
+  assert.match(guard, /STAGING_LOOPBACK \? '\/mfa-challenge\.html'/);
+  assert.match(guard, /STAGING_LOOPBACK \? '\/mfa-enroll\.html'/);
+  assert.match(login, /if \(STAGING_LOOPBACK\) return;/);
+  assert.match(login, /resetButton\.disabled = true;/);
+});
+
 test('approval requires explicit inspected bytes and exact-version binding', () => {
   assert.match(js, /crypto\.subtle\.digest\('SHA-256', await selected\.arrayBuffer\(\)\)/);
   assert.match(js, /selected\.size !== data\.bytes/);
