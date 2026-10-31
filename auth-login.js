@@ -1,7 +1,16 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-const SUPABASE_URL = 'https://itswbmjvuxumfjqkkqgx.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_lgBKt5K8CQCPSC-MaC7s6g_M2iTdWEN';
+// Only the dedicated loopback :4185 development server may use the synthetic staging project.
+// Production hostnames, other localhost ports, and all HTTPS production deployments keep production.
+const STAGING_LOOPBACK = window.location.protocol === 'http:'
+  && ['localhost', '127.0.0.1'].includes(window.location.hostname)
+  && window.location.port === '4185';
+const SUPABASE_URL = STAGING_LOOPBACK
+  ? 'https://qemjnekgcbuddayzhdtr.supabase.co'
+  : 'https://itswbmjvuxumfjqkkqgx.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = STAGING_LOOPBACK
+  ? 'sb_publishable_x_XtO1UU9SwfqhyPNyArDA_N5f_eQyK'
+  : 'sb_publishable_lgBKt5K8CQCPSC-MaC7s6g_M2iTdWEN';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
@@ -17,9 +26,15 @@ const passwordInput = document.getElementById('admin-password');
 const submitButton = document.getElementById('admin-login-submit');
 const status = document.getElementById('admin-login-status');
 const resetButton = document.getElementById('admin-reset-password');
-const PASSWORD_RECOVERY_URL = 'https://admin.reaperai.com/reset-password.html';
+const PASSWORD_RECOVERY_URL = STAGING_LOOPBACK ? null : 'https://admin.reaperai.com/reset-password.html';
+// Synthetic staging identities are fictional; do not trigger real recovery emails from localhost.
+if (STAGING_LOOPBACK && resetButton) {
+  resetButton.disabled = true;
+  resetButton.hidden = true;
+}
 
 resetButton?.addEventListener('click', async () => {
+  if (STAGING_LOOPBACK) return;
   const email = emailInput?.value.trim().toLowerCase();
   if (!email) {
     status.textContent = 'Enter your administrator email address first.';

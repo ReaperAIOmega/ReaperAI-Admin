@@ -1,11 +1,20 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-const SUPABASE_URL = 'https://itswbmjvuxumfjqkkqgx.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_lgBKt5K8CQCPSC-MaC7s6g_M2iTdWEN';
-const LOGIN_URL = 'https://admin.reaperai.com/login.html';
-const PASSWORD_URL = 'https://admin.reaperai.com/change-password.html';
-const MFA_ENROLL_URL = 'https://admin.reaperai.com/mfa-enroll.html';
-const MFA_CHALLENGE_URL = 'https://admin.reaperai.com/mfa-challenge.html';
+// Only the dedicated loopback :4185 development server may use the synthetic staging project.
+// Production hostnames, other localhost ports, and all HTTPS production deployments keep production.
+const STAGING_LOOPBACK = window.location.protocol === 'http:'
+  && ['localhost', '127.0.0.1'].includes(window.location.hostname)
+  && window.location.port === '4185';
+const SUPABASE_URL = STAGING_LOOPBACK
+  ? 'https://qemjnekgcbuddayzhdtr.supabase.co'
+  : 'https://itswbmjvuxumfjqkkqgx.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = STAGING_LOOPBACK
+  ? 'sb_publishable_x_XtO1UU9SwfqhyPNyArDA_N5f_eQyK'
+  : 'sb_publishable_lgBKt5K8CQCPSC-MaC7s6g_M2iTdWEN';
+const LOGIN_URL = STAGING_LOOPBACK ? '/login.html' : 'https://admin.reaperai.com/login.html';
+const PASSWORD_URL = STAGING_LOOPBACK ? '/change-password.html' : 'https://admin.reaperai.com/change-password.html';
+const MFA_ENROLL_URL = STAGING_LOOPBACK ? '/mfa-enroll.html' : 'https://admin.reaperai.com/mfa-enroll.html';
+const MFA_CHALLENGE_URL = STAGING_LOOPBACK ? '/mfa-challenge.html' : 'https://admin.reaperai.com/mfa-challenge.html';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },

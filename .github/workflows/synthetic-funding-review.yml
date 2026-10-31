@@ -1,0 +1,31 @@
+name: Synthetic Funding Review Safety
+on:
+  pull_request:
+    paths:
+      - 'admin-records.js'
+      - 'documents.html'
+      - 'funding-artifact-review.js'
+      - 'funding-artifact-review.html'
+      - 'tests/synthetic-funding-review.test.mjs'
+      - '.github/workflows/synthetic-funding-review.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'admin-records.js'
+      - 'documents.html'
+      - 'funding-artifact-review.js'
+      - 'funding-artifact-review.html'
+      - 'tests/synthetic-funding-review.test.mjs'
+      - '.github/workflows/synthetic-funding-review.yml'
+permissions:
+  contents: read
+jobs:
+  static-approval-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify synthetic reviewer and generic-document safety
+        run: |
+          node --check funding-artifact-review.js
+          node --check admin-records.js
+          node --test tests/synthetic-funding-review.test.mjs
