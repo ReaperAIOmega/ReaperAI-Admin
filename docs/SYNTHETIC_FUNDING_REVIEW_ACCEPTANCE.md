@@ -5,13 +5,13 @@
 ## Preflight
 
 1. Keep the existing Core PR #32, Admin PR #7 and Portal PR #3 unmerged. Record the exact commit SHA and ensure a clean working tree before syncing the PR candidates into a **separate staging checkout**. Never overwrite local uncommitted HP work.
-2. The loopback staging server uses `127.0.0.1:4174` for Admin and `127.0.0.1:4173` for Portal. Run only from a local trusted HP account; do not expose the bind address or relax the host/CSP restrictions.
+2. The loopback staging server uses `127.0.0.1:4185` for Admin and `127.0.0.1:4173` for Portal. Run only from a local trusted HP account; do not expose the bind address or relax the host/CSP restrictions.
 3. Have the core and Admin checkout directories as siblings. From the Core checkout use `python scripts/staging_app_server.py Admin` only after verifying that the sibling Admin folder contains the new PR files and a nonsecret staging configuration prerequisite (`runtime-config.mjs`). This server requires the local file to exist; do not put any `service_role`, `sb_secret_` or other server secrets in that file.
-4. The PR #7 `auth-guard.js` and `auth-login.js` use staging Supabase **only** when protocol is `http:`, hostname is `localhost` or `127.0.0.1`, and port is exactly `4174`. All other origins continue to use production and are **not** valid for synthetic review. Do not copy staging behavior to production.
+4. The PR #7 `auth-guard.js` and `auth-login.js` use staging Supabase **only** when protocol is `http:`, hostname is `localhost` or `127.0.0.1`, and port is exactly `4185`. All other origins continue to use production and are **not** valid for synthetic review. Do not copy staging behavior to production.
 
 ## Browser acceptance
 
-1. Open `http://127.0.0.1:4174/login.html`; verify developer tools show all Auth/PostgREST requests going only to `qemjnekgcbuddayzhdtr.supabase.co` (staging). **STOP** if any browser requests to production `itswbmjvuxumfjqkkqgx.supabase.co` are observed.
+1. Open `http://127.0.0.1:4185/login.html`; verify developer tools show all Auth/PostgREST requests going only to `qemjnekgcbuddayzhdtr.supabase.co` (staging). **STOP** if any browser requests to production `itswbmjvuxumfjqkkqgx.supabase.co` are observed.
 2. Sign in with the existing fictional staging administrator account; do not reveal credentials, tokens, MFA seeds or cookies in screenshots or logs.
 3. Verify account role `admin`, active status and MFA **AAL2**. AAL1 must not enable review. Test logout and session expiry; changes after expiry must fail closed.
 4. Open `/documents.html`. It should display six existing synthetic document metadata rows rather than `Unavailable`. On a canonical `funding-document` row, generic **Open**, **Approve**, and **Request changes** are unavailable; direct browser Storage signed URLs must remain blocked.
