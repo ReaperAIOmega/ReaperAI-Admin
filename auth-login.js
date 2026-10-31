@@ -1,10 +1,10 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-// Only the dedicated loopback :4174 development server may use the synthetic staging project.
+// Only the dedicated loopback :4185 development server may use the synthetic staging project.
 // Production hostnames, other localhost ports, and all HTTPS production deployments keep production.
 const STAGING_LOOPBACK = window.location.protocol === 'http:'
   && ['localhost', '127.0.0.1'].includes(window.location.hostname)
-  && window.location.port === '4174';
+  && window.location.port === '4185';
 const SUPABASE_URL = STAGING_LOOPBACK
   ? 'https://qemjnekgcbuddayzhdtr.supabase.co'
   : 'https://itswbmjvuxumfjqkkqgx.supabase.co';
