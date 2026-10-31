@@ -24,7 +24,7 @@ test('localhost staging login and AAL2 guard do not silently reuse production', 
   for (const src of [guard, login]) {
     assert.match(src, /window\.location\.protocol === 'http:'/);
     assert.match(src, /\['localhost', '127\.0\.0\.1'\]\.includes\(window\.location\.hostname\)/);
-    assert.match(src, /window\.location\.port === '4174'/);
+    assert.match(src, /window\.location\.port === '4185'/);
     assert.match(src, /STAGING_LOOPBACK\s*\? 'https:\/\/qemjnekgcbuddayzhdtr\.supabase\.co'/);
     assert.match(src, /: 'https:\/\/itswbmjvuxumfjqkkqgx\.supabase\.co'/);
     assert.match(src, /STAGING_LOOPBACK\s*\? 'sb_publishable_/);
