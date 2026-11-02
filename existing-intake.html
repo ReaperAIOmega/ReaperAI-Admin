@@ -1,0 +1,12 @@
+<!doctype html><html lang="en" style="visibility:hidden"><head><meta charset="utf-8"><title>REAPER Existing Account Funding Intake</title><link rel="stylesheet" href="styles.css"></head><body>
+<div id="navbar" data-navbar="navbar-admin.html"></div><main class="container"><h1>Existing account funding intake</h1>
+<p>Isolated synthetic staging. Reuses an existing confirmed account and selected business. Creates a readiness-only case, assessment and task. No new account, payment, verified identity, lender decision or delivery.</p>
+<p id="status" role="status">Checking signed staging administrator…</p>
+<form id="link-form"><label>Funding intake<select id="intake" required></select></label><label>Existing client<select id="client" required></select></label><label>Existing business<select id="entity" required></select></label>
+<p>Financial facts are unknown in this acceptance workflow. The original immutable request and key are retained for recovery.</p>
+<label>Original operation key<input id="operation-key" readonly></label>
+<button type="submit" id="submit" disabled>Link or recover existing account</button>
+<button type="button" id="overlap" disabled>Test overlapping same-key submissions</button>
+<button type="button" id="interrupt" disabled>Interrupt transport then recover original operation</button><button type="button" id="conflicts" disabled>Test changed-payload and duplicate rejection</button></form>
+<pre id="result" aria-live="polite"></pre><section><h2>Internal nonbinding service draft</h2><p>After recovering a canonical intake above, prepare an internal $1 synthetic draft using the named inactive TEST ONLY template. This is not the service price, a legally approved agreement, client acceptance, a charge or delivery.</p><button id="service-draft" type="button" disabled>Prepare or recover internal synthetic service draft</button><pre id="service-result" aria-live="polite">No service draft prepared.</pre></section><a href="intakes.html">Intakes</a></main>
+<script type="module" src="auth-guard.js"></script><script src="load-navbar.js"></script><script type="module" src="existing-intake-ui.mjs"></script></body></html>

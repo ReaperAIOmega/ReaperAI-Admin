@@ -18,6 +18,10 @@ jobs:
         run: node scripts/verify-static.mjs
       - name: Verify password recovery behavior
         run: node --test scripts/recovery.test.cjs
+      - name: Verify exact-version reviewer recovery and human approval boundaries
+        run: node --test scripts/funding-artifact-review.test.mjs scripts/funding-artifact-review-ui.test.mjs scripts/blueprint-source-rebind.test.mjs scripts/synthetic-retrieval-permit.test.mjs scripts/funding-transaction.test.mjs scripts/funding-operation-recovery.test.mjs scripts/existing-intake.test.mjs scripts/written-readiness-draft.test.mjs scripts/existing-intake-service-ui.test.mjs scripts/auth-boundary.test.mjs
+      - name: Verify funding profile identity and client switching
+        run: node --test scripts/funding-profile.test.mjs
       - name: Check letter UI JavaScript syntax
         run: node --check letter-desk.js
       - name: Validate letter workflow integration

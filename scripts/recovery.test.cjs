@@ -12,7 +12,9 @@ async function harness(source,{hash='',search='',reject=false,logoutError=false,
  auth.mfa={getAuthenticatorAssuranceLevel:async()=>({data:{currentLevel:upgraded?'aal2':'aal1',nextLevel:mfa?'aal2':'aal1'},error:aalError?Error('unavailable'):null}),listFactors:async()=>({data:{totp:noFactors?[]:[{id:'test-factor',status:'verified'}]}}),challengeAndVerify:async({factorId,code})=>{calls.push('verifyMfa');assert.equal(factorId,'test-factor');assert.equal(code,'123456');upgraded=!mfaError&&!noUpgrade;return {error:mfaError?{code:'mfa_verification_failed'}:null};}};
  let options;
  const context={URLSearchParams,document:{title:'Recovery',getElementById:id=>elements[id],createElement:()=>({})},window:{location:{hash,search,pathname:'/reset-password.html',replace(){calls.push('redirect');}},history:{replaceState(){calls.push('scrub');}}},createClient:(_u,_k,o)=>{options=o;return{auth};}};
- vm.runInNewContext(source.replace(/^import .*\n/,''),context);
+ // Git for Windows can check this source out with CRLF. Strip the ESM import
+ // on either platform before evaluating it with the injected client stub.
+ vm.runInNewContext(source.replace(/^import [^\r\n]*\r?\n/,''),context);
  await new Promise(resolve=>setImmediate(resolve));
  return {calls,elements,options,logoutScopes};
 }

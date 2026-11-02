@@ -140,16 +140,25 @@ async function openDocument(supabase, row, button) {
   window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
 }
 
-async function reviewDocument(supabase, profile, row, reviewStatus, note, button) {
+function isCanonicalFundingArtifact(row) {
+  return row.category === 'funding-document'
+    || String(row.storage_path || '').startsWith('funding-artifacts/');
+}
+
+async function reviewDocument(supabase, profile, row, reviewStatus, button) {
+  // Generic document review is NOT the signed exact-version funding approval workflow.
+  if (isCanonicalFundingArtifact(row)) {
+    window.alert('This funding artifact requires authenticated exact-version approval. The generic Documents page cannot approve it.');
+    return;
+  }
   button.disabled = true;
-  const { error } = await supabase.from('documents').update({
+  const { data, error } = await supabase.from('documents').update({
     review_status: reviewStatus,
     reviewed_by: profile.id,
     reviewed_at: new Date().toISOString(),
-    review_notes: note || null,
-  }).eq('id', row.id);
-  if (error) {
-    console.error('Document review update failed', error);
+  }).eq('id', row.id).select('id');
+  if (error || data?.length !== 1) {
+    console.error('Document review update failed or affected no rows', error, data);
     button.disabled = false;
     window.alert('Document review status could not be updated.');
     return;
@@ -158,7 +167,15 @@ async function reviewDocument(supabase, profile, row, reviewStatus, note, button
 }
 
 async function loadView({ supabase, profile }) {
+  const isolatedIntake = ['127.0.0.1','localhost'].includes(location.hostname)
+    && location.port === '4185' && supabase?.supabaseUrl === 'https://qemjnekgcbuddayzhdtr.supabase.co';
+  const reviewLink = document.getElementById('synthetic-artifact-review-link');
+  if (reviewLink) reviewLink.hidden = !(profile?.role === 'admin'
+    && ['localhost', '127.0.0.1'].includes(location.hostname)
+    && supabase?.supabaseUrl === 'https://qemjnekgcbuddayzhdtr.supabase.co');
   const view = document.body.dataset.adminView;
+  const intakeDescription=document.getElementById('intake-description');
+  if(view==='intakes'&&isolatedIntake&&intakeDescription)intakeDescription.textContent='Isolated fictional funding intakes. Reuse an explicitly selected existing account and business, or recover the original operation. No new Auth identity, payment, verified underwriting or delivery.';
   const container = document.getElementById('records-table');
   const summary = document.getElementById('records-summary');
   if (!view || !container) return;
@@ -188,12 +205,13 @@ async function loadView({ supabase, profile }) {
       },
     ];
   } else if (view === 'intakes') {
-    query = supabase.from('intakes').select('id,full_name,email,phone,service_type,funding_amount_needed,status,submitted_at').order('submitted_at', { ascending: false });
+    query = isolatedIntake ? supabase.rpc('read_existing_funding_intakes')
+      : supabase.from('intakes').select('id,full_name,email,phone,service_type,funding_amount_needed,status,submitted_at').order('submitted_at', { ascending: false });
     columns = [
       { label: 'Lead', key: 'full_name' },
       { label: 'Email', key: 'email' },
       { label: 'Service', key: 'service_type' },
-      { label: 'Funding Need', render: (r) => fmtMoney(r.funding_amount_needed) },
+      { label: 'Funding Need', render: (r) => isolatedIntake ? 'Not loaded in this view' : r.funding_amount_needed == null ? 'Not recorded' : fmtMoney(r.funding_amount_needed) },
       { label: 'Status', key: 'status', status: true },
       { label: 'Submitted', render: (r) => fmtDate(r.submitted_at) },
       {
@@ -203,15 +221,16 @@ async function loadView({ supabase, profile }) {
           button.type = 'button';
           button.className = 'button';
           const isNew = String(r.status || '').toLowerCase() === 'new';
-          button.textContent = isNew ? 'Approve & create client' : 'Converted';
-          button.disabled = !isNew;
-          if (isNew) button.addEventListener('click', () => convertIntake(supabase, r, button));
+          button.textContent = isolatedIntake ? 'Existing account association / recovery' : isNew ? 'Approve & create client' : 'Converted';
+          button.disabled = isolatedIntake ? false : !isNew;
+          if (isolatedIntake) button.addEventListener('click', () => { location.href = 'existing-intake.html'; });
+          else if (isNew) button.addEventListener('click', () => convertIntake(supabase, r, button));
           return button;
         },
       },
     ];
   } else if (view === 'documents') {
-    query = supabase.from('documents').select('id,client_id,file_name,category,review_status,review_notes,file_size_bytes,storage_path,uploaded_at').order('uploaded_at', { ascending: false });
+    query = supabase.from('documents').select('id,client_id,file_name,category,review_status,file_size_bytes,storage_path,uploaded_at').order('uploaded_at', { ascending: false });
     columns = [
       { label: 'File', key: 'file_name' },
       { label: 'Category', key: 'category' },
@@ -228,16 +247,21 @@ async function loadView({ supabase, profile }) {
           const open = document.createElement('button');
           open.type = 'button'; open.className = 'btn-secondary'; open.textContent = 'Open';
           open.addEventListener('click', () => openDocument(supabase, r, open));
+          if (isCanonicalFundingArtifact(r)) {
+            const label = document.createElement('span');
+            label.textContent = 'Private canonical artifact; download via authorized staging storage, then use the exact-version review page.';
+            label.title = 'Direct signed URL access is intentionally blocked for canonical funding bytes. Review must use the separate AAL2 workflow.';
+            wrap.append(label);
+            return wrap;
+          }
           const approve = document.createElement('button');
           approve.type = 'button'; approve.className = 'button'; approve.textContent = 'Approve';
-          approve.addEventListener('click', () => reviewDocument(supabase, profile, r, 'approved', null, approve));
+          approve.addEventListener('click', () => reviewDocument(supabase, profile, r, 'approved', approve));
           const changes = document.createElement('button');
-          changes.type = 'button'; changes.className = 'btn-secondary'; changes.textContent = 'Request changes';
-          changes.addEventListener('click', () => {
-            const reason = window.prompt('What needs to be corrected or replaced?');
-            if (reason === null) return;
-            reviewDocument(supabase, profile, r, 'changes_requested', reason.trim(), changes);
-          });
+          changes.type = 'button'; changes.className = 'btn-secondary';
+          changes.textContent = 'Request changes (unavailable)';
+          changes.title = 'Review notes are not supported in the current documents schema. No change request will be recorded.';
+          changes.disabled = true;
           wrap.append(open, approve, changes);
           return wrap;
         },
