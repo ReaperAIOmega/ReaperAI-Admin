@@ -174,6 +174,8 @@ async function loadView({ supabase, profile }) {
     && ['localhost', '127.0.0.1'].includes(location.hostname)
     && supabase?.supabaseUrl === 'https://qemjnekgcbuddayzhdtr.supabase.co');
   const view = document.body.dataset.adminView;
+  const intakeDescription=document.getElementById('intake-description');
+  if(view==='intakes'&&isolatedIntake&&intakeDescription)intakeDescription.textContent='Isolated fictional funding intakes. Reuse an explicitly selected existing account and business, or recover the original operation. No new Auth identity, payment, verified underwriting or delivery.';
   const container = document.getElementById('records-table');
   const summary = document.getElementById('records-summary');
   if (!view || !container) return;
