@@ -1,11 +1,13 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/+esm';
 
-const SUPABASE_URL = 'https://itswbmjvuxumfjqkkqgx.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_lgBKt5K8CQCPSC-MaC7s6g_M2iTdWEN';
-const LOGIN_URL = 'https://admin.reaperai.com/login.html';
-const PASSWORD_URL = 'https://admin.reaperai.com/change-password.html';
-const MFA_ENROLL_URL = 'https://admin.reaperai.com/mfa-enroll.html';
-const MFA_CHALLENGE_URL = 'https://admin.reaperai.com/mfa-challenge.html';
+import { resolveRuntime } from './runtime-config.mjs';
+const runtime = resolveRuntime(window.location, 'admin');
+const SUPABASE_URL = runtime.url;
+const SUPABASE_PUBLISHABLE_KEY = runtime.key;
+const LOGIN_URL = runtime.page('/login.html');
+const PASSWORD_URL = runtime.page('/change-password.html');
+const MFA_ENROLL_URL = runtime.page('/mfa-enroll.html');
+const MFA_CHALLENGE_URL = runtime.page('/mfa-challenge.html');
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
@@ -19,7 +21,8 @@ const redirectToLogin = () => window.location.replace(LOGIN_URL);
 
 try {
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-  if (sessionError || !session) {
+  if (sessionError || !session || !runtime.emailAllowed(session.user?.email)) {
+    if (session) await supabase.auth.signOut({ scope: 'local' });
     redirectToLogin();
   } else {
     const { data: profile, error: profileError } = await supabase

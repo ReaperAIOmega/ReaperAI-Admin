@@ -1,7 +1,10 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/+esm';
 
-const SUPABASE_URL = 'https://itswbmjvuxumfjqkkqgx.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_lgBKt5K8CQCPSC-MaC7s6g_M2iTdWEN';
+import { resolveRuntime } from './runtime-config.mjs';
+import { recordAal1Denial } from './staging-acceptance.mjs';
+const runtime = resolveRuntime(window.location, 'admin');
+const SUPABASE_URL = runtime.url;
+const SUPABASE_PUBLISHABLE_KEY = runtime.key;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
@@ -17,16 +20,18 @@ const passwordInput = document.getElementById('admin-password');
 const submitButton = document.getElementById('admin-login-submit');
 const status = document.getElementById('admin-login-status');
 const resetButton = document.getElementById('admin-reset-password');
-const PASSWORD_RECOVERY_URL = 'https://admin.reaperai.com/reset-password.html';
+const PASSWORD_RECOVERY_URL = runtime.page('/reset-password.html');
+if (runtime.staging && resetButton) { resetButton.disabled = true; resetButton.hidden = true; }
 
 resetButton?.addEventListener('click', async () => {
+  if (runtime.staging) { status.textContent = 'Email recovery is disabled in synthetic staging.'; return; }
   const email = emailInput?.value.trim().toLowerCase();
   if (!email) {
     status.textContent = 'Enter your administrator email address first.';
     return;
   }
   resetButton.disabled = true;
-  status.textContent = 'Requesting password recovery…';
+  status.textContent = 'Requesting password recovery...';
   try {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: PASSWORD_RECOVERY_URL,
@@ -49,7 +54,8 @@ if (params.get('initialized') === '1' && status) {
 
 const existing = await supabase.auth.getSession();
 if (existing.data?.session) {
-  window.location.replace('/');
+  if (runtime.emailAllowed(existing.data.session.user?.email)) window.location.replace('/');
+  else await supabase.auth.signOut({ scope: 'local' });
 }
 
 form?.addEventListener('submit', async (event) => {
@@ -57,6 +63,10 @@ form?.addEventListener('submit', async (event) => {
   const email = emailInput?.value.trim().toLowerCase();
   const password = passwordInput?.value ?? '';
   if (!email || !password) return;
+  if (!runtime.emailAllowed(email)) {
+    status.textContent = 'This identity is not permitted in this environment.';
+    return;
+  }
 
   submitButton.disabled = true;
   submitButton.textContent = 'Signing in...';
@@ -85,5 +95,9 @@ form?.addEventListener('submit', async (event) => {
     return;
   }
 
+  if (runtime.staging) {
+    try { await recordAal1Denial(supabase, runtime, localStorage); }
+    catch { /* Absence of genuine AAL1 evidence must never be reported as a pass. */ }
+  }
   window.location.replace('/');
 });
