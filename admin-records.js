@@ -99,6 +99,11 @@ function showOnboardingResult(result) {
 async function convertIntake(supabase, row, button) {
   const ok = window.confirm(`Approve ${row.full_name || row.email} and create the client account, onboarding case, task, and secure portal activation link?`);
   if (!ok) return;
+  const state = String(row.state || '').trim().toUpperCase();
+  if (!/^[A-Z]{2}$/.test(state)) {
+    window.alert('This intake is missing a valid two-letter state. Conversion is blocked by the jurisdiction compliance gate. Correct the existing intake through an approved administrator process; do not create another intake.');
+    return;
+  }
   button.disabled = true;
   button.textContent = 'Creating…';
   const { data, error } = await supabase.functions.invoke('convert-intake', { body: { intake_id: row.id } });
@@ -106,7 +111,10 @@ async function convertIntake(supabase, row, button) {
     console.error('Intake conversion failed', error, data);
     button.disabled = false;
     button.textContent = 'Approve & create client';
-    window.alert('Client conversion could not be completed. Review the backend error before retrying.');
+    const reason = data?.error === 'conversion_failed' && data?.detail === 'intake_jurisdiction_missing'
+      ? 'This saved intake is missing a jurisdiction. Correct its state before approving; do not create another intake.'
+      : 'Client conversion could not be completed. Review the backend error before retrying.';
+    window.alert(reason);
     return;
   }
   button.textContent = 'Converted';
@@ -188,11 +196,12 @@ async function loadView({ supabase, profile }) {
       },
     ];
   } else if (view === 'intakes') {
-    query = supabase.from('intakes').select('id,full_name,email,phone,service_type,funding_amount_needed,status,submitted_at').order('submitted_at', { ascending: false });
+    query = supabase.from('intakes').select('id,full_name,email,phone,state,service_type,funding_amount_needed,status,submitted_at').order('submitted_at', { ascending: false });
     columns = [
       { label: 'Lead', key: 'full_name' },
       { label: 'Email', key: 'email' },
       { label: 'Service', key: 'service_type' },
+      { label: 'State', render: (r) => r.state || 'Missing — review required' },
       { label: 'Funding Need', render: (r) => fmtMoney(r.funding_amount_needed) },
       { label: 'Status', key: 'status', status: true },
       { label: 'Submitted', render: (r) => fmtDate(r.submitted_at) },
@@ -203,8 +212,9 @@ async function loadView({ supabase, profile }) {
           button.type = 'button';
           button.className = 'button';
           const isNew = String(r.status || '').toLowerCase() === 'new';
-          button.textContent = isNew ? 'Approve & create client' : 'Converted';
-          button.disabled = !isNew;
+          const hasJurisdiction = /^[A-Z]{2}$/.test(String(r.state || '').trim().toUpperCase());
+          button.textContent = !isNew ? 'Converted' : hasJurisdiction ? 'Approve & create client' : 'Missing state — review';
+          button.disabled = !isNew || !hasJurisdiction;
           if (isNew) button.addEventListener('click', () => convertIntake(supabase, r, button));
           return button;
         },
