@@ -1,4 +1,4 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/+esm';
+import { createClient } from './vendor/supabase-2.117.2.js';
 
 import { resolveRuntime } from './runtime-config.mjs';
 import { recordAal1Denial } from './staging-acceptance.mjs';

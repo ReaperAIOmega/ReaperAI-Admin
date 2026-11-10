@@ -1,6 +1,7 @@
-const ready = window.reaperAdmin
-  ? Promise.resolve(window.reaperAdmin)
-  : new Promise((resolve) => document.addEventListener('reaper:admin-ready', (event) => resolve(event.detail), { once: true }));
+// Account-setup page: consumes the bootstrap context, never the privileged admin-ready signal.
+const ready = window.reaperAdminBootstrap
+  ? Promise.resolve(window.reaperAdminBootstrap)
+  : new Promise((resolve) => document.addEventListener('reaper:admin-bootstrap', (event) => resolve(event.detail), { once: true }));
 
 const form = document.getElementById('mfa-challenge-form');
 const code = document.getElementById('mfa-code');
