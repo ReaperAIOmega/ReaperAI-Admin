@@ -20,6 +20,8 @@ jobs:
         run: node --test scripts/recovery.test.cjs
       - name: Verify exact-version reviewer recovery and human approval boundaries
         run: node --test scripts/funding-artifact-review.test.mjs scripts/funding-artifact-review-ui.test.mjs scripts/blueprint-source-rebind.test.mjs scripts/synthetic-retrieval-permit.test.mjs scripts/funding-transaction.test.mjs scripts/funding-operation-recovery.test.mjs scripts/existing-intake.test.mjs scripts/written-readiness-draft.test.mjs scripts/existing-intake-service-ui.test.mjs scripts/auth-boundary.test.mjs
+      - name: Run every Admin test file (catch-all so new tests cannot silently skip CI)
+        run: node --test scripts/*.test.mjs scripts/*.test.cjs
       - name: Verify funding profile identity and client switching
         run: node --test scripts/funding-profile.test.mjs
       - name: Check letter UI JavaScript syntax

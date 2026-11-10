@@ -1,4 +1,4 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/+esm';
+import { createClient } from './vendor/supabase-2.117.2.js';
 
 import { resolveRuntime } from './runtime-config.mjs';
 const runtime = resolveRuntime(window.location, 'admin');
@@ -18,6 +18,25 @@ const onPasswordPage = path.endsWith('/change-password.html');
 const onMfaEnrollPage = path.endsWith('/mfa-enroll.html');
 const onMfaChallengePage = path.endsWith('/mfa-challenge.html');
 const redirectToLogin = () => window.location.replace(LOGIN_URL);
+const onBootstrapPage = onPasswordPage || onMfaEnrollPage || onMfaChallengePage;
+const bindSignOut = () => document.addEventListener('click', async (event) => {
+  const target = event.target.closest?.('[data-signout]');
+  if (!target) return;
+  event.preventDefault();
+  await supabase.auth.signOut();
+  redirectToLogin();
+});
+// Two distinct signals:
+// - reaper:admin-bootstrap / window.reaperAdminBootstrap: only on the password and MFA pages,
+//   at whatever assurance level those pages need in order to finish account setup.
+// - reaper:admin-ready / window.reaperAdmin: only for an initialized administrator with a
+//   verified TOTP factor at AAL2. Privileged page scripts listen exclusively for this signal,
+//   so no AAL1 session can start them, whichever page it lands on.
+function publishBootstrap(context) {
+  window.reaperAdminBootstrap = Object.freeze({ ...context, assurance: context.aal?.currentLevel || 'aal1' });
+  document.documentElement.style.visibility = 'visible';
+  document.dispatchEvent(new CustomEvent('reaper:admin-bootstrap', { detail: window.reaperAdminBootstrap }));
+}
 
 try {
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -63,21 +82,19 @@ try {
           window.location.replace(MFA_ENROLL_URL);
         } else {
           if (window.location.hash) window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
-          window.reaperAdmin = Object.freeze({ supabase, session, profile, security, factors, aal });
-          document.documentElement.style.visibility = 'visible';
-          document.dispatchEvent(new CustomEvent('reaper:admin-ready', { detail: window.reaperAdmin }));
-          document.addEventListener('click', async (event) => {
-            const target = event.target.closest?.('[data-signout]');
-            if (!target) return;
-            event.preventDefault();
-            await supabase.auth.signOut();
-            redirectToLogin();
-          });
+          const context = { supabase, session, profile, security, factors, aal };
+          if (onBootstrapPage) publishBootstrap(context);
+          if (verifiedTotp.length && currentLevel === 'aal2') {
+            window.reaperAdmin = Object.freeze(context);
+            document.documentElement.style.visibility = 'visible';
+            document.dispatchEvent(new CustomEvent('reaper:admin-ready', { detail: window.reaperAdmin }));
+          }
+          bindSignOut();
         }
       } else {
-        window.reaperAdmin = Object.freeze({ supabase, session, profile, security });
-        document.documentElement.style.visibility = 'visible';
-        document.dispatchEvent(new CustomEvent('reaper:admin-ready', { detail: window.reaperAdmin }));
+        // Uninitialized password on the password page: bootstrap only, never admin-ready.
+        publishBootstrap({ supabase, session, profile, security });
+        bindSignOut();
       }
     }
   }
