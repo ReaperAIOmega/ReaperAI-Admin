@@ -45,7 +45,10 @@ form?.addEventListener('submit', async (event) => {
     return;
   }
 
-  const { data, error: completionError } = await supabase.functions.invoke('complete-admin-password-initialization', { body: {} });
+  // The password is also sent to the server function, which (Core #49) performs the change itself and only then
+  // records initialization. Keeping updateUser above makes either deployment order safe: the previously deployed
+  // function ignores the body, and the reviewed one sets the same password again before flipping the marker.
+  const { data, error: completionError } = await supabase.functions.invoke('complete-admin-password-initialization', { body: { password } });
   if (completionError || !data?.ok) {
     status.textContent = 'Password changed, but account initialization could not be completed. Sign out and contact the administrator.';
     submitButton.disabled = false;

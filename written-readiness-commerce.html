@@ -1,0 +1,25 @@
+<!DOCTYPE html><html lang="en" style="visibility:hidden;"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin | Written Readiness Offer and Reconciliation</title><link rel="stylesheet" href="styles.css"></head>
+<body><div id="navbar" data-navbar="navbar-admin.html"></div><main class="container">
+<h1>Written readiness offer (isolated staging)</h1>
+<p>Publishes the existing draft quote exactly as reviewed and records prior-payment reconciliation. Written, asynchronous deliverables only; no consultations; no financing promises. Nothing here charges, delivers or messages a client.</p>
+<p id="status" role="status">Waiting for a signed AAL2 administrator session…</p>
+<section><h2>1. Publish the draft quote</h2>
+<form id="publish-form"><label>Draft operation ID<input id="draft-id" required pattern="[0-9a-fA-F-]{36}"></label>
+<button type="button" id="preview" disabled>Preview exact terms</button>
+<pre id="preview-result" aria-live="polite"></pre>
+<label>Offer expires<input id="expires" type="datetime-local" required></label>
+<button type="submit" id="publish" disabled>Publish exactly these terms</button></form>
+<pre id="publish-result" aria-live="polite"></pre></section>
+<section><h2>2. Prior-payment reconciliation</h2>
+<p>Attach the documents you reviewed (PDF). The server stores and hashes them; the digest proves which document you relied on, not that its content is true. Unknown, previously paid, refunded or disputed outcomes never open a card checkout.</p>
+<form id="reconcile-form"><label>Payment obligation ID<input id="payment-id" required pattern="[0-9a-fA-F-]{36}"></label>
+<label>Decision<select id="decision"><option value="unknown">Unknown (stays held)</option><option value="no_prior_payment_verified">No prior payment verified (allows sandbox checkout)</option><option value="previously_paid_verified">Previously paid on Fiverr (no checkout)</option><option value="disputed_or_refunded">Disputed or refunded on Fiverr (held)</option></select></label>
+<fieldset><legend>Sources checked</legend><label><input type="checkbox" name="source" value="fiverr"> Fiverr orders</label><label><input type="checkbox" name="source" value="direct_invoice"> Direct invoices</label><label><input type="checkbox" name="source" value="other_marketplace"> Other marketplace</label></fieldset>
+<label>Checked at<input id="checked-at" type="datetime-local" required></label>
+<label>Evidence documents (PDF)<input id="evidence-files" type="file" accept="application/pdf" multiple></label>
+<fieldset id="marketplace"><legend>Fiverr order (marketplace decisions only)</legend><label>Order reference<input id="order-ref"></label><label>Provider state<select id="provider-state"><option value="refunded">refunded</option><option value="disputed">disputed</option></select></label><label>Gross amount (USD)<input id="gross-amount"></label><label>Verified at<input id="verified-at" type="datetime-local"></label></fieldset>
+<label>Review notes<textarea id="notes" minlength="10" maxlength="2000" required></textarea></label>
+<button type="submit" id="reconcile" disabled>Store evidence and record decision</button></form>
+<pre id="reconcile-result" aria-live="polite"></pre></section>
+</main><script src="load-navbar.js"></script><script type="module" src="auth-guard.js"></script><script type="module" src="written-readiness-commerce-ui.mjs"></script></body></html>
