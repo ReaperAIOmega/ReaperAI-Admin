@@ -2,8 +2,9 @@ name: ReaperAI Admin Verify
 on:
   push:
     branches: [main]
+  # All PRs, including stacked PRs whose base is not main, plus manual runs on any branch.
   pull_request:
-    branches: [main]
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
