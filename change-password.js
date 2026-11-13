@@ -18,9 +18,10 @@ const strongEnough = (value) =>
   /\d/.test(value) &&
   /[^A-Za-z0-9]/.test(value);
 
+let submitting = false;
 form?.addEventListener('submit', async (event) => {
   event.preventDefault();
-  const { supabase } = await ready;
+  if (submitting) return;
   const password = passwordInput?.value ?? '';
   const confirm = confirmInput?.value ?? '';
 
@@ -34,28 +35,23 @@ form?.addEventListener('submit', async (event) => {
     return;
   }
 
+  submitting = true;
   submitButton.disabled = true;
   submitButton.textContent = 'Updating password...';
-
-  const { error: passwordError } = await supabase.auth.updateUser({ password });
-  if (passwordError) {
-    status.textContent = 'Password update failed. Choose a different strong password and try again.';
+  try {
+    const { supabase } = await ready;
+    const { data, error } = await supabase.functions.invoke('initialize-admin-password-v2', { body: { password } });
+    if (error || data?.ok !== true) throw new Error('Initialization not confirmed');
+    const { error: signOutError } = await supabase.auth.signOut();
+    if (signOutError) throw signOutError;
+    window.location.replace('/login.html?password=updated');
+  } catch {
+    status.textContent = 'Password setup could not be confirmed. Contact the administrator before retrying.';
+  } finally {
+    passwordInput.value = '';
+    confirmInput.value = '';
+    submitting = false;
     submitButton.disabled = false;
     submitButton.textContent = 'Set new password';
-    return;
   }
-
-  // The password is also sent to the server function, which (Core #49) performs the change itself and only then
-  // records initialization. Keeping updateUser above makes either deployment order safe: the previously deployed
-  // function ignores the body, and the reviewed one sets the same password again before flipping the marker.
-  const { data, error: completionError } = await supabase.functions.invoke('complete-admin-password-initialization', { body: { password } });
-  if (completionError || !data?.ok) {
-    status.textContent = 'Password changed, but account initialization could not be completed. Sign out and contact the administrator.';
-    submitButton.disabled = false;
-    submitButton.textContent = 'Set new password';
-    return;
-  }
-
-  await supabase.auth.signOut();
-  window.location.replace('/login.html?password=updated');
 });

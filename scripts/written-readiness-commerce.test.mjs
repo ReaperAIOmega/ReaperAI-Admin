@@ -86,6 +86,6 @@ test('privileged page starts only on admin-ready, uses textContent, and change-p
   assert.match(ui, /'reaper:admin-ready'/);
   assert.ok(!/admin-bootstrap|reaperAdminBootstrap|innerHTML/.test(ui));
   const cp = await readFile(new URL('../change-password.js', import.meta.url), 'utf8');
-  assert.match(cp, /invoke\('complete-admin-password-initialization', \{ body: \{ password \} \}\)/);
-  assert.match(cp, /auth\.updateUser\(\{ password \}\)/, 'kept so either deployment order is safe');
+  assert.match(cp, /invoke\('initialize-admin-password-v2', \{ body: \{ password \} \}\)/);
+  assert.doesNotMatch(cp, /auth\.updateUser/);
 });
