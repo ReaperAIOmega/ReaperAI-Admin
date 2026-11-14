@@ -86,6 +86,35 @@ test('privileged page starts only on admin-ready, uses textContent, and change-p
   assert.match(ui, /'reaper:admin-ready'/);
   assert.ok(!/admin-bootstrap|reaperAdminBootstrap|innerHTML/.test(ui));
   const cp = await readFile(new URL('../change-password.js', import.meta.url), 'utf8');
-  assert.match(cp, /invoke\('complete-admin-password-initialization', \{ body: \{ password \} \}\)/);
-  assert.match(cp, /auth\.updateUser\(\{ password \}\)/, 'kept so either deployment order is safe');
+  assert.match(cp, /invoke\('initialize-admin-password-v2', \{ body: \{ password \} \}\)/);
+  assert.doesNotMatch(cp, /auth\.updateUser/);
+});
+
+
+test('password setup confirms the password separately from sign out and prevents a second submission', async () => {
+  const { runInNewContext } = await import('node:vm');
+  const cp = await readFile(new URL('../change-password.js', import.meta.url), 'utf8');
+  for (const accepted of [true, false]) {
+    let submit;
+    let requests = 0;
+    let signOuts = 0;
+    const nodes = Object.fromEntries(['password-form','new-password','confirm-password','password-submit','password-status']
+      .map(id => [id, { value: 'Synthetic-Passw0rd!', textContent: '', disabled: false }]));
+    nodes['password-form'].addEventListener = (_, handler) => { submit = handler; };
+    const supabase = {
+      functions: { invoke: async () => { requests++; return { data: { ok: accepted } }; } },
+      auth: { signOut: async () => { signOuts++; return { error: new Error('offline') }; } },
+    };
+    runInNewContext(cp, {
+      window: { reaperAdminBootstrap: { supabase } },
+      document: { getElementById: id => nodes[id] },
+    });
+    await submit({ preventDefault() {} });
+    nodes['new-password'].value = nodes['confirm-password'].value = 'Synthetic-Passw0rd!';
+    await submit({ preventDefault() {} });
+    assert.equal(requests, 1);
+    assert.equal(signOuts, accepted ? 1 : 0);
+    assert.equal(nodes['password-submit'].disabled, true);
+    assert.match(nodes['password-status'].textContent, accepted ? /Password updated, but sign-out/ : /setup could not be confirmed/);
+  }
 });
