@@ -18,10 +18,10 @@ const strongEnough = (value) =>
   /\d/.test(value) &&
   /[^A-Za-z0-9]/.test(value);
 
-let submitting = false;
+let setupLocked = false;
 form?.addEventListener('submit', async (event) => {
   event.preventDefault();
-  if (submitting) return;
+  if (setupLocked) return;
   const password = passwordInput?.value ?? '';
   const confirm = confirmInput?.value ?? '';
 
@@ -35,23 +35,29 @@ form?.addEventListener('submit', async (event) => {
     return;
   }
 
-  submitting = true;
+  setupLocked = true;
   submitButton.disabled = true;
   submitButton.textContent = 'Updating password...';
+  let supabase;
   try {
-    const { supabase } = await ready;
+    ({ supabase } = await ready);
     const { data, error } = await supabase.functions.invoke('initialize-admin-password-v2', { body: { password } });
     if (error || data?.ok !== true) throw new Error('Initialization not confirmed');
-    const { error: signOutError } = await supabase.auth.signOut();
-    if (signOutError) throw signOutError;
-    window.location.replace('/login.html?password=updated');
   } catch {
     status.textContent = 'Password setup could not be confirmed. Contact the administrator before retrying.';
+    return;
   } finally {
     passwordInput.value = '';
     confirmInput.value = '';
-    submitting = false;
-    submitButton.disabled = false;
-    submitButton.textContent = 'Set new password';
+    submitButton.textContent = 'Password setup submitted';
+  }
+
+  status.textContent = 'Password updated. Signing out…';
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    window.location.replace('/login.html?password=updated');
+  } catch {
+    status.textContent = 'Password updated, but sign-out could not be confirmed. Close this page and use the login page before continuing.';
   }
 });
